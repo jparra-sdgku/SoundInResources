@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flashcards | SoundIn UI Advanced</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary:#4F46E5;--primary-dark:#3730A3;--primary-light:#EEF2FF;--accent:#7C3AED;
+    --surface:#FFFFFF;--bg:#F8F9FF;--border:#E0E7FF;--text:#1F1F2E;--text-muted:#6B7280;--text-light:#9CA3AF;
+    --success:#059669;--success-bg:#ECFDF5;--warning:#D97706;
+    --error:#DC2626;--error-bg:#FEF2F2;
+    --code-bg:#1E1E2E;--code-text:#CDD6F4;--code-comment:#6C7086;--code-keyword:#CBA6F7;
+    --code-string:#A6E3A1;--code-type:#89DCEB;--code-number:#FAB387;
+    --nav-h:60px;--sidebar-w:260px;--radius:10px;--radius-lg:16px;
+    --shadow:0 1px 3px rgba(79,70,229,.08),0 1px 2px rgba(0,0,0,.06);
+    --shadow-md:0 4px 16px rgba(79,70,229,.10),0 2px 4px rgba(0,0,0,.06);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:15px;}
+
+  .topnav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:100;box-shadow:var(--shadow);}
+  .topnav-brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;color:var(--primary);text-decoration:none;}
+  .topnav-brand .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;}
+  .topnav-course{font-size:13px;color:var(--text-muted);background:var(--primary-light);padding:4px 12px;border-radius:20px;font-weight:500;}
+  .nav-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;transition:all .18s;border:1px solid var(--border);color:var(--text-muted);background:var(--surface);}
+  .nav-btn:hover{background:var(--primary-light);color:var(--primary);border-color:var(--primary);}
+
+  .sidebar{position:fixed;top:var(--nav-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:24px 0;z-index:90;}
+  .sidebar-section-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--text-light);text-transform:uppercase;padding:0 20px 8px;margin-top:16px;}
+  .sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;text-decoration:none;color:var(--text-muted);transition:all .15s;position:relative;cursor:pointer;border:none;background:none;width:100%;text-align:left;}
+  .sidebar-link:hover{background:var(--primary-light);color:var(--primary);}
+  .sidebar-link.active{background:var(--primary-light);color:var(--primary);font-weight:500;}
+  .sidebar-link.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary);border-radius:0 3px 3px 0;}
+  .sidebar-link .ch-badge{font-size:10px;font-weight:600;min-width:22px;height:18px;border-radius:4px;background:var(--border);color:var(--text-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+  .main{margin-left:var(--sidebar-w);margin-top:var(--nav-h);padding:48px 56px 80px;max-width:900px;}
+
+  /* ── FILTER BAR ── */
+  .filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px;}
+  .filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-size:13px;font-family:'Sora',sans-serif;cursor:pointer;transition:all .18s;font-weight:500;}
+  .filter-btn:hover{border-color:var(--primary);color:var(--primary);}
+  .filter-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+  /* ── PROGRESS ── */
+  .progress-section{margin-bottom:32px;}
+  .progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .progress-label{font-size:14px;font-weight:600;color:var(--text);}
+  .progress-counter{font-size:13px;color:var(--text-muted);}
+  .progress-track{width:100%;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:3px;transition:width .4s ease;}
+  .stats-row{display:flex;gap:20px;margin-top:12px;}
+  .stat-chip{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;}
+  .stat-dot{width:8px;height:8px;border-radius:50%;}
+
+  /* ── CARD ── */
+  .card-area{perspective:1200px;height:280px;cursor:pointer;margin-bottom:20px;user-select:none;}
+  .card-inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
+  .card-area.flipped .card-inner{transform:rotateY(180deg);}
+  .card-face{position:absolute;inset:0;border-radius:var(--radius-lg);border:1px solid var(--border);backface-visibility:hidden;display:flex;flex-direction:column;padding:28px 32px;background:var(--surface);box-shadow:var(--shadow);}
+  .card-back{transform:rotateY(180deg);}
+  .card-cat{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:auto;padding:4px 10px;border-radius:20px;align-self:flex-start;}
+  .card-term{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;color:var(--text);margin:auto 0;line-height:1.25;}
+  .card-tagline{font-size:14px;color:var(--text-muted);margin-top:12px;}
+  .card-hint{font-size:13px;color:var(--text-light);margin-top:auto;display:flex;align-items:center;gap:6px;}
+  .card-def{font-size:14px;color:var(--text);line-height:1.7;overflow-y:auto;flex:1;}
+  .card-code{background:var(--code-bg);border-radius:var(--radius);padding:12px 14px;margin:12px 0 0;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;color:var(--code-text);overflow-x:auto;}
+  .card-where{font-size:11px;color:var(--text-light);margin-top:10px;}
+  .kw{color:var(--code-keyword);}.str{color:var(--code-string);}.cmt{color:var(--code-comment);font-style:italic;}.typ{color:var(--code-type);}.num{color:var(--code-number);}.fn{color:#89B4FA;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--primary-light);color:var(--primary);padding:1px 5px;border-radius:4px;}
+
+  /* ── ACTIONS ── */
+  .actions{display:flex;gap:10px;margin-bottom:16px;}
+  .action-btn{flex:1;padding:12px 16px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-family:'Sora',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .action-btn:hover{box-shadow:var(--shadow-md);}
+  .action-btn.flip-btn{color:var(--primary);border-color:var(--primary);}
+  .action-btn.flip-btn:hover{background:var(--primary-light);}
+  .action-btn.wrong-btn{color:var(--error);border-color:var(--error);}
+  .action-btn.wrong-btn:hover{background:var(--error-bg);}
+  .action-btn.right-btn{color:var(--success);border-color:var(--success);}
+  .action-btn.right-btn:hover{background:var(--success-bg);}
+  .hidden{display:none!important;}
+
+  /* ── KEYBOARD HINT ── */
+  .keyboard-hint{text-align:center;font-size:12px;color:var(--text-light);margin-top:4px;}
+  kbd{background:var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);}
+
+  /* ── COMPLETE ── */
+  .complete-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px;text-align:center;box-shadow:var(--shadow-md);}
+  .complete-icon{font-size:48px;margin-bottom:16px;}
+  .complete-title{font-size:24px;font-weight:600;margin-bottom:8px;}
+  .complete-sub{font-size:15px;color:var(--text-muted);margin-bottom:28px;}
+  .complete-stats{display:flex;justify-content:center;gap:40px;margin-bottom:28px;}
+  .complete-stat-num{font-size:32px;font-weight:600;}
+  .complete-stat-lbl{font-size:13px;color:var(--text-muted);}
+  .complete-btns{display:flex;gap:12px;justify-content:center;}
+  .complete-btn{padding:10px 24px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-family:'Sora',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .18s;}
+  .complete-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .complete-btn.primary:hover{background:var(--primary-dark);}
+  .complete-btn:hover{background:var(--primary-light);color:var(--primary);border-color:var(--primary);}
+
+  ::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="topnav-brand" href="#"><div class="logo">S</div>SoundIn</a>
+  <span class="topnav-course">UI Advanced — Flashcards</span>
+  <a class="nav-btn" href="glossary.html">← Glossary</a>
+</nav>
+
+<aside class="sidebar">
+  <div class="sidebar-section-label">Resources</div>
+  <a class="sidebar-link" href="glossary.html"><span class="ch-badge">G</span>Glossary</a>
+  <a class="sidebar-link active" href="flashcards.html"><span class="ch-badge">F</span>Flashcards</a>
+  <div class="sidebar-section-label" style="margin-top:24px;">Filter by category</div>
+  <button class="sidebar-link" onclick="filterCat('all')"><span class="cat-dot" style="background:var(--primary);"></span>All terms</button>
+  <button class="sidebar-link" onclick="filterCat('Kotlin')"><span class="cat-dot" style="background:#E8562A;"></span>Kotlin Fundamentals</button>
+  <button class="sidebar-link" onclick="filterCat('Lambdas')"><span class="cat-dot" style="background:#DB2777;"></span>Functions &amp; Lambdas</button>
+  <button class="sidebar-link" onclick="filterCat('Flow')"><span class="cat-dot" style="background:#7C3AED;"></span>Coroutines &amp; Flow</button>
+  <button class="sidebar-link" onclick="filterCat('State')"><span class="cat-dot" style="background:#0EA5E9;"></span>Compose — State</button>
+  <button class="sidebar-link" onclick="filterCat('Layout')"><span class="cat-dot" style="background:#0EA5E9;"></span>Compose — Layout</button>
+  <button class="sidebar-link" onclick="filterCat('Components')"><span class="cat-dot" style="background:#0EA5E9;"></span>Compose — Components</button>
+  <button class="sidebar-link" onclick="filterCat('Navigation')"><span class="cat-dot" style="background:#059669;"></span>Navigation</button>
+  <button class="sidebar-link" onclick="filterCat('Architecture')"><span class="cat-dot" style="background:#D97706;"></span>Architecture</button>
+  <button class="sidebar-link" onclick="filterCat('Material')"><span class="cat-dot" style="background:#DC2626;"></span>Material 3 Colors</button>
+  <button class="sidebar-link" onclick="filterPractice()"><span class="cat-dot" style="background:#DC2626;"></span>Practice again</button>
+</aside>
+
+<main class="main">
+
+  <div style="margin-bottom:32px;">
+    <div style="font-size:32px;font-weight:600;margin-bottom:8px;">Flashcards</div>
+    <div style="font-size:15px;color:var(--text-muted);">62 terms · tap to flip · keyboard shortcuts: <kbd>Space</kbd> flip &nbsp; <kbd>←</kbd> practice &nbsp; <kbd>→</kbd> got it</div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="filterCat('all')">All (62)</button>
+    <button class="filter-btn" onclick="filterCat('Kotlin')">Kotlin (14)</button>
+    <button class="filter-btn" onclick="filterCat('Lambdas')">Lambdas (5)</button>
+    <button class="filter-btn" onclick="filterCat('Flow')">Flow (9)</button>
+    <button class="filter-btn" onclick="filterCat('State')">State (6)</button>
+    <button class="filter-btn" onclick="filterCat('Layout')">Layout (8)</button>
+    <button class="filter-btn" onclick="filterCat('Components')">Components (7)</button>
+    <button class="filter-btn" onclick="filterCat('Navigation')">Navigation (8)</button>
+    <button class="filter-btn" onclick="filterCat('Architecture')">Architecture (5)</button>
+    <button class="filter-btn" onclick="filterCat('Material')">Material 3 (4)</button>
+    <button class="filter-btn" style="color:var(--error);border-color:var(--error);" onclick="filterPractice()">⟳ Practice again</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-section">
+    <div class="progress-top">
+      <span class="progress-label" id="progressLabel">Card 1 of 62</span>
+      <span class="progress-counter" id="progressCounter">0% complete</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="stats-row">
+      <div class="stat-chip"><div class="stat-dot" style="background:var(--success);"></div><span id="rightCount">0</span> got it</div>
+      <div class="stat-chip"><div class="stat-dot" style="background:var(--error);"></div><span id="wrongCount">0</span> practice</div>
+      <div class="stat-chip"><div class="stat-dot" style="background:var(--border);"></div><span id="leftCount">62</span> remaining</div>
+    </div>
+  </div>
+
+  <!-- CARD -->
+  <div class="card-area" id="cardArea" onclick="flipCard()">
+    <div class="card-inner" id="cardInner">
+      <div class="card-face card-front">
+        <span class="card-cat" id="frontCat"></span>
+        <div class="card-term" id="frontTerm"></div>
+        <div class="card-tagline" id="frontTagline"></div>
+        <div class="card-hint">↻ Tap to reveal definition</div>
+      </div>
+      <div class="card-face card-back">
+        <span class="card-cat" id="backCat"></span>
+        <div class="card-def" id="backDef"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions" id="frontActions">
+    <button class="action-btn flip-btn" onclick="event.stopPropagation();flipCard()">↻ Flip card</button>
+  </div>
+  <div class="actions hidden" id="backActions">
+    <button class="action-btn wrong-btn" onclick="mark(false)">✕ Need practice</button>
+    <button class="action-btn right-btn" onclick="mark(true)">✓ Got it</button>
+  </div>
+  <div class="keyboard-hint">Keyboard: <kbd>Space</kbd> flip &nbsp; <kbd>←</kbd> need practice &nbsp; <kbd>→</kbd> got it</div>
+
+  <!-- COMPLETE -->
+  <div class="complete-box hidden" id="completeBox">
+    <div class="complete-icon">🎉</div>
+    <div class="complete-title">Deck complete!</div>
+    <div class="complete-sub" id="completeSub"></div>
+    <div class="complete-stats">
+      <div class="complete-stat"><div class="complete-stat-num" id="cRight" style="color:var(--success);">0</div><div class="complete-stat-lbl">Got it</div></div>
+      <div class="complete-stat"><div class="complete-stat-num" id="cWrong" style="color:var(--error);">0</div><div class="complete-stat-lbl">Practice</div></div>
+    </div>
+    <div class="complete-btns">
+      <button class="complete-btn" onclick="filterPractice()">Review wrong ones</button>
+      <button class="complete-btn primary" onclick="resetDeck()">Start over</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const CAT_COLORS = {
+  'Kotlin':       { bg:'#FEF0EC', color:'#C84B1F' },
+  'Lambdas':      { bg:'#FDE8F2', color:'#BE185D' },
+  'Flow':         { bg:'#F5F0FF', color:'#6D28D9' },
+  'State':        { bg:'#EFF9FF', color:'#0369A1' },
+  'Layout':       { bg:'#EFF9FF', color:'#0369A1' },
+  'Components':   { bg:'#EFF9FF', color:'#0369A1' },
+  'Navigation':   { bg:'#ECFDF5', color:'#065F46' },
+  'Architecture': { bg:'#FFFBEB', color:'#92400E' },
+  'Material':     { bg:'#FEF2F2', color:'#991B1B' },
+};
+
+const ALL_CARDS = [
+  // ── KOTLIN ──────────────────────────────────────────────────────────────
+  { cat:'Kotlin', term:'val / var', tagline:'Immutable vs mutable variable declaration',
+    def:'<code>val</code> declares a read-only variable — its reference cannot be reassigned after initialization. <code>var</code> declares a mutable variable that can be reassigned at any time. In ViewModels, public state is always <code>val</code> and private mutable state is also <code>val</code> — the StateFlow itself does not change, only its <code>.value</code> does.',
+    code:`<span class="kw">val</span> name = <span class="str">"John"</span>          <span class="cmt">// cannot reassign</span>\n<span class="kw">var</span> count = <span class="num">0</span>            <span class="cmt">// can reassign</span>\n<span class="kw">private val</span> _query = <span class="fn">MutableStateFlow</span>(<span class="str">""</span>)  <span class="cmt">// val, but .value can change</span>`,
+    where:'📍 Used in every file in the course' },
+
+  { cat:'Kotlin', term:'by', tagline:'Property delegate — removes the need to write .value',
+    def:'A Kotlin keyword that delegates a property to another object. In Compose, used with <code>collectAsStateWithLifecycle()</code> and <code>remember { mutableStateOf() }</code> so you write <code>userName</code> instead of <code>userName.value</code> everywhere in the composable.',
+    code:`<span class="cmt">// Without by</span>\n<span class="kw">val</span> userName: <span class="typ">State</span>&lt;<span class="typ">String</span>&gt; = viewModel.userName.<span class="fn">collectAsStateWithLifecycle</span>()\n<span class="fn">Text</span>(userName.value)\n\n<span class="cmt">// With by — no .value needed</span>\n<span class="kw">val</span> userName <span class="kw">by</span> viewModel.userName.<span class="fn">collectAsStateWithLifecycle</span>()\n<span class="fn">Text</span>(userName)`,
+    where:'📍 Ch3 ProfileScreen · Ch5 LibraryScreen · Ch7 SearchScreen' },
+
+  { cat:'Kotlin', term:'data class', tagline:'Model class with auto-generated equals, copy, toString',
+    def:'A Kotlin class designed to hold data. The compiler automatically generates <code>equals()</code>, <code>hashCode()</code>, <code>toString()</code>, and <code>copy()</code>. The <code>copy()</code> function creates a new instance with some fields changed — essential for immutable state updates in the Repository.',
+    code:`<span class="kw">data class</span> <span class="typ">Playlist</span>(\n    <span class="kw">val</span> id: <span class="typ">Int</span>,\n    <span class="kw">val</span> name: <span class="typ">String</span>,\n    <span class="kw">val</span> isFavorite: <span class="typ">Boolean</span> = <span class="kw">false</span>\n)\n<span class="kw">val</span> updated = playlist.<span class="fn">copy</span>(isFavorite = <span class="kw">true</span>)`,
+    where:'📍 Ch1 — Playlist.kt · Song.kt' },
+
+  { cat:'Kotlin', term:'object', tagline:'Singleton — one instance for the entire app',
+    def:'Declares a singleton — a class the Kotlin runtime instantiates exactly once. Every part of the app that references an <code>object</code> gets the same instance. Used for <code>PlaylistRepository</code> so all ViewModels share a single list of playlists.',
+    code:`<span class="kw">object</span> <span class="typ">PlaylistRepository</span> {   <span class="cmt">// one instance forever</span>\n    <span class="kw">private val</span> _playlists = <span class="fn">MutableStateFlow</span>(<span class="fn">listOf</span>(...))\n    <span class="kw">val</span> playlists = _playlists.<span class="fn">asStateFlow</span>()\n}`,
+    where:'📍 Ch1 — PlaylistRepository.kt' },
+
+  { cat:'Kotlin', term:'?. — Safe call', tagline:'Execute only if the value is not null',
+    def:'Calls a function or accesses a property only if the object is not <code>null</code>. If it is <code>null</code>, the entire expression returns <code>null</code> instead of throwing a NullPointerException.',
+    code:`<span class="kw">val</span> currentRoute = currentBackStackEntry?.destination?.route\nuserName.<span class="fn">firstOrNull</span>()?.<span class="fn">uppercaseChar</span>()?.<span class="fn">toString</span>() ?: <span class="str">"?"</span>`,
+    where:'📍 Ch2 MainScreen · Ch3 ProfileScreen' },
+
+  { cat:'Kotlin', term:'?: — Elvis operator', tagline:'Provide a fallback value when the left side is null',
+    def:'Returns the left side if it is not <code>null</code>, or the right side if it is. Commonly chained after safe calls to provide a safe default value without <code>if/else</code>.',
+    code:`<span class="cmt">// If getInt() returns null, use 0 as fallback</span>\n<span class="kw">val</span> playlistId = backStackEntry.arguments?.<span class="fn">getInt</span>(<span class="str">"playlistId"</span>) ?: <span class="num">0</span>\n<span class="kw">val</span> initial = userName.<span class="fn">firstOrNull</span>()?.<span class="fn">uppercaseChar</span>()?.<span class="fn">toString</span>() ?: <span class="str">"?"</span>`,
+    where:'📍 Ch2 SoundInNavGraph · Ch3 ProfileScreen' },
+
+  { cat:'Kotlin', term:'?.let { }', tagline:'Execute a block only when the value is not null',
+    def:'Combines a safe call with the <code>let</code> scope function. The block runs only if the value is not <code>null</code>. Inside the lambda, the non-null value is available as <code>it</code> or a named parameter. Used to conditionally show the BottomSheet only when a playlist is selected.',
+    code:`selectedPlaylist?.<span class="fn">let</span> { playlist ->\n    <span class="fn">PlaylistBottomSheet</span>(\n        playlist  = playlist,\n        onDismiss = { selectedPlaylist = <span class="kw">null</span> }\n    )\n}`,
+    where:'📍 Ch6 LibraryScreen' },
+
+  { cat:'Kotlin', term:'when', tagline:"Multi-branch conditional — Kotlin's switch expression",
+    def:'Kotlin\'s replacement for Java\'s <code>switch</code>. Unlike <code>switch</code>, <code>when</code> is an expression — it returns a value. Used in <code>LibraryViewModel</code> to decide which list to return based on the selected tab index.',
+    code:`<span class="kw">when</span> (tabIndex) {\n    <span class="num">0</span>    -> playlists\n    <span class="num">1</span>    -> playlists.<span class="fn">filter</span> { it.isFavorite }\n    <span class="kw">else</span> -> playlists\n}`,
+    where:'📍 Ch4 LibraryViewModel' },
+
+  { cat:'Kotlin', term:'filter() · map() · forEach · forEachIndexed', tagline:'Standard collection operations on lists',
+    def:'Kotlin standard library functions for working with collections. <code>filter</code> keeps matching items, <code>map</code> transforms each item, <code>forEach</code> iterates without returning a new list, <code>forEachIndexed</code> also gives the current index.',
+    code:`playlists.<span class="fn">filter</span> { it.isFavorite }           <span class="cmt">// keep favorites</span>\n_playlists.value.<span class="fn">map</span> { it.<span class="fn">copy</span>(...) }       <span class="cmt">// transform each</span>\nitems.<span class="fn">forEach</span> { (route, icon, label) -> ... }\ntabs.<span class="fn">forEachIndexed</span> { index, title -> ... }`,
+    where:'📍 Ch1 Repository · Ch2 BottomNav · Ch5 LibraryScreen' },
+
+  { cat:'Kotlin', term:'firstOrNull()', tagline:'First element or null if the collection is empty',
+    def:'Returns the first character or element. Unlike <code>first()</code>, it returns <code>null</code> instead of throwing an exception when the string is empty. Safe to chain with <code>?.</code> operators.',
+    code:`userName.<span class="fn">firstOrNull</span>()?.<span class="fn">uppercaseChar</span>()?.<span class="fn">toString</span>() ?: <span class="str">"?"\n</span><span class="cmt">// "John Doe" → "J"   |   "" → "?"</span>`,
+    where:'📍 Ch3 ProfileScreen — avatar initial' },
+
+  { cat:'Kotlin', term:'contains() · isBlank() · isEmpty()', tagline:'String checks used in search filtering',
+    def:'<code>contains(query, ignoreCase)</code> returns true if the string includes the substring. <code>isBlank()</code> is true if empty or only whitespace — safer than <code>isEmpty()</code> which only checks for zero characters.',
+    code:`<span class="kw">if</span> (query.<span class="fn">isBlank</span>()) {\n    playlists\n} <span class="kw">else</span> {\n    playlists.<span class="fn">filter</span> {\n        it.name.<span class="fn">contains</span>(query, ignoreCase = <span class="kw">true</span>) ||\n        it.genre.<span class="fn">contains</span>(query, ignoreCase = <span class="kw">true</span>)\n    }\n}`,
+    where:'📍 Ch7 SearchViewModel' },
+
+  { cat:'Kotlin', term:'String templates — \${}', tagline:'Embed values directly inside strings',
+    def:'Kotlin string templates allow embedding expressions inside a string using <code>\${expression}</code> or <code>$variable</code> for simple names. The runtime evaluates the expression and converts it to a string automatically.',
+    code:`<span class="fn">Text</span>(<span class="str">"\${playlist.songCount} songs"</span>)         <span class="cmt">// "15 songs"</span>\nnavController.<span class="fn">navigate</span>(<span class="str">"playlistDetail/\${playlist.id}"</span>)`,
+    where:'📍 Ch4 PlaylistCard · Ch5 MainScreen' },
+
+  { cat:'Kotlin', term:'Pair · Triple', tagline:'Group 2 or 3 values without a custom data class',
+    def:'Standard library classes that group 2 or 3 values. They support destructuring in lambdas. When you need 4+ values together, create a <code>data class</code> instead for clarity.',
+    code:`<span class="kw">val</span> items = <span class="fn">listOf</span>(\n    <span class="fn">Triple</span>(SoundInRoutes.LIBRARY, Icons.Default.LibraryMusic, <span class="str">"Library"</span>),\n    <span class="fn">Triple</span>(SoundInRoutes.SEARCH,  Icons.Default.Search,       <span class="str">"Search"</span>)\n)\nitems.<span class="fn">forEach</span> { (route, icon, label) -> ... }`,
+    where:'📍 Ch2 BottomNavigationBar' },
+
+  { cat:'Kotlin', term:'copy()', tagline:'New data class instance with some fields changed',
+    def:'Generated automatically by <code>data class</code>. Creates a new instance copying all fields, replacing only the ones you specify. Essential for updating immutable state — you never mutate an existing object, you create a new one.',
+    code:`_playlists.value = _playlists.value.<span class="fn">map</span> {\n    <span class="kw">if</span> (it.id == playlist.id)\n        it.<span class="fn">copy</span>(isFavorite = !it.isFavorite)\n    <span class="kw">else</span> it\n}`,
+    where:'📍 Ch1 PlaylistRepository — toggleFavorite()' },
+
+  // ── LAMBDAS ─────────────────────────────────────────────────────────────
+  { cat:'Lambdas', term:'() -> Unit', tagline:'A function type: no parameters, returns nothing',
+    def:'A Kotlin function type. The parentheses list parameter types (empty = none) and <code>Unit</code> is the return type meaning "returns nothing" — equivalent to <code>void</code> in Java. Used for callbacks like <code>onLogout</code> and <code>onDismiss</code>.',
+    code:`<span class="kw">fun</span> <span class="fn">ProfileScreen</span>(\n    onLogout: () -> <span class="typ">Unit</span>   <span class="cmt">// a parameter THAT IS a function</span>\n) {\n    <span class="fn">Button</span>(onClick = { <span class="fn">onLogout</span>() }) { <span class="fn">Text</span>(<span class="str">"Log Out"</span>) }\n}`,
+    where:'📍 Every screen signature in the course' },
+
+  { cat:'Lambdas', term:'(Playlist) -> Unit · (String) -> Unit', tagline:'Function types with typed parameters',
+    def:'Same pattern as <code>() -> Unit</code> but receiving typed data. <code>(Playlist) -> Unit</code> means "a function that receives a Playlist and returns nothing." These are callbacks that pass data upward — state hoisting in practice.',
+    code:`<span class="kw">fun</span> <span class="fn">LibraryScreen</span>(\n    onNavigateToPlaylistDetail: (<span class="typ">Playlist</span>) -> <span class="typ">Unit</span>\n) {\n    <span class="fn">PlaylistCard</span>(\n        onClick = { <span class="fn">onNavigateToPlaylistDetail</span>(playlist) }\n    )\n}`,
+    where:'📍 Ch5 LibraryScreen · Ch7 SearchScreen' },
+
+  { cat:'Lambdas', term:'Lambda', tagline:'An anonymous function passed as a value',
+    def:'A function without a name that you pass as a value. Written between curly braces <code>{ }</code>. When a lambda is the last parameter, it can be moved outside the parentheses — this is called a trailing lambda.',
+    code:`<span class="cmt">// Regular lambda as parameter</span>\n<span class="fn">Button</span>(onClick = { viewModel.<span class="fn">logout</span>() })\n\n<span class="cmt">// Trailing lambda</span>\n<span class="fn">SearchBar</span>(inputField = { ... }) {\n    <span class="fn">LazyColumn</span> { ... }  <span class="cmt">// content shown when expanded</span>\n}`,
+    where:'📍 Every composable in the course' },
+
+  { cat:'Lambdas', term:':: — Function reference', tagline:'Pass a function as a value without calling it',
+    def:'Creates a reference to a function so it can be passed as a value without being called immediately. When the lambda does nothing except call a single function and pass its argument directly, <code>::</code> is a cleaner equivalent.',
+    code:`<span class="cmt">// These two are equivalent:</span>\nonQueryChange = { query -> viewModel.<span class="fn">onQueryChange</span>(query) }\nonQueryChange = viewModel::onQueryChange   <span class="cmt">// cleaner</span>`,
+    where:'📍 Ch7 SearchScreen' },
+
+  { cat:'Lambdas', term:'Default parameter values = {}', tagline:'Make a parameter optional with a default',
+    def:'A parameter with a default value does not need to be passed by the caller. In Compose, function-type parameters often default to <code>{}</code> (empty lambda that does nothing), useful for Previews and incremental development.',
+    code:`<span class="kw">fun</span> <span class="fn">PlaylistCard</span>(\n    playlist:    <span class="typ">Playlist</span>,\n    onClick:     () -> <span class="typ">Unit</span>,\n    onLongClick: () -> <span class="typ">Unit</span> = {}  <span class="cmt">// optional</span>\n)\n<span class="fn">PlaylistCard</span>(playlist = p, onClick = { ... })  <span class="cmt">// works without onLongClick</span>`,
+    where:'📍 Ch4 PlaylistCard · Previews throughout' },
+
+  // ── FLOW ────────────────────────────────────────────────────────────────
+  { cat:'Flow', term:'MutableStateFlow', tagline:'Hot stream whose value can be changed directly',
+    def:'Holds a single value that can be updated via <code>.value =</code>. Always hot — it always has a current value and emits to all collectors when the value changes. Always declared <code>private</code> in ViewModels.',
+    code:`<span class="kw">private val</span> _query = <span class="fn">MutableStateFlow</span>(<span class="str">""</span>)\n\n<span class="kw">fun</span> <span class="fn">onQueryChange</span>(query: <span class="typ">String</span>) {\n    _query.value = query   <span class="cmt">// triggers all collectors</span>\n}`,
+    where:'📍 Ch3 UserSessionViewModel · Ch4 LibraryViewModel · Ch7 SearchViewModel' },
+
+  { cat:'Flow', term:'StateFlow · asStateFlow()', tagline:'Read-only public view of a MutableStateFlow',
+    def:'<code>StateFlow</code> is the read-only interface of <code>MutableStateFlow</code>. The UI can observe it but cannot modify it. <code>asStateFlow()</code> converts a <code>MutableStateFlow</code> into a <code>StateFlow</code> — the standard private/public state pattern.',
+    code:`<span class="cmt">// private — only ViewModel can write</span>\n<span class="kw">private val</span> _query = <span class="fn">MutableStateFlow</span>(<span class="str">""</span>)\n\n<span class="cmt">// public — UI can only read</span>\n<span class="kw">val</span> query: <span class="typ">StateFlow</span>&lt;<span class="typ">String</span>&gt; = _query.<span class="fn">asStateFlow</span>()`,
+    where:'📍 Every ViewModel in the course' },
+
+  { cat:'Flow', term:'.value', tagline:'Read or write the current value of a MutableStateFlow',
+    def:'Accesses the current value held by a <code>MutableStateFlow</code>. Assigning to it triggers all collectors — every UI part observing this flow updates automatically. Reading from it returns the current value synchronously.',
+    code:`<span class="cmt">// Write — triggers recomposition in all observers</span>\n_isLoggedIn.value = <span class="kw">true</span>\n\n<span class="cmt">// Read — synchronous, always available</span>\n<span class="kw">val</span> current = _query.value`,
+    where:'📍 Every ViewModel in the course' },
+
+  { cat:'Flow', term:'combine()', tagline:'Merge two StateFlows into one reactive result',
+    def:'Takes 2–5 <code>StateFlow</code> sources and a lambda. Every time any source emits a new value, the lambda runs automatically and produces a new result. Think: "whenever X changes OR Y changes, recalculate." Returns a cold Flow — convert with <code>stateIn()</code>.',
+    code:`<span class="kw">val</span> filteredPlaylist = <span class="fn">combine</span>(\n    PlaylistRepository.playlists,\n    _selectedTab\n) { playlists, tabIndex ->\n    <span class="kw">when</span> (tabIndex) {\n        <span class="num">0</span> -> playlists\n        <span class="num">1</span> -> playlists.<span class="fn">filter</span> { it.isFavorite }\n        <span class="kw">else</span> -> playlists\n    }\n}.<span class="fn">stateIn</span>(...)`,
+    where:'📍 Ch4 LibraryViewModel · Ch7 SearchViewModel' },
+
+  { cat:'Flow', term:'stateIn()', tagline:'Convert a cold Flow into a hot StateFlow',
+    def:'Converts a cold <code>Flow</code> (like the result of <code>combine()</code>) into a hot <code>StateFlow</code> that always has a value ready for the UI. Takes three parameters: <code>scope</code>, <code>started</code>, and <code>initialValue</code>.',
+    code:`.<span class="fn">stateIn</span>(\n    scope        = viewModelScope,\n    <span class="cmt">// lives as long as the ViewModel</span>\n    started      = SharingStarted.<span class="fn">WhileSubscribed</span>(<span class="num">5000</span>),\n    <span class="cmt">// stays alive 5s after last subscriber</span>\n    initialValue = <span class="fn">emptyList</span>()\n    <span class="cmt">// what UI gets before first emission</span>\n)`,
+    where:'📍 Ch4 LibraryViewModel · Ch7 SearchViewModel' },
+
+  { cat:'Flow', term:'Cold Flow vs Hot StateFlow', tagline:'The fundamental difference between the two stream types',
+    def:'A cold Flow starts executing only when someone collects it — like a tap that only flows when opened. A hot StateFlow always has a current value regardless of collectors — like a tank always full. <code>stateIn()</code> converts one into the other.',
+    code:`<span class="cmt">// combine() → cold Flow</span>\n<span class="cmt">// stateIn() → hot StateFlow ← UI uses this</span>\n\n<span class="cmt">// WhileSubscribed(5000) keeps it alive during rotation</span>\n<span class="cmt">// so the UI reconnects to the same flow instantly</span>`,
+    where:'📍 Ch4 — concept explained in LibraryViewModel' },
+
+  { cat:'Flow', term:'viewModelScope', tagline:'Coroutine scope tied to the ViewModel lifecycle',
+    def:'A <code>CoroutineScope</code> provided by the <code>ViewModel</code> class. Coroutines launched here are cancelled automatically when the ViewModel is cleared — preventing memory leaks. Used as the <code>scope</code> parameter of <code>stateIn()</code>.',
+    code:`.<span class="fn">stateIn</span>(\n    scope = viewModelScope,  <span class="cmt">// flow stops when ViewModel is cleared</span>\n    ...\n)`,
+    where:'📍 Ch4 LibraryViewModel · Ch7 SearchViewModel' },
+
+  { cat:'Flow', term:'suspend · scope.launch{}', tagline:'Functions that can pause — run them in a coroutine',
+    def:'A <code>suspend</code> function can pause execution without blocking the thread and resume when ready. It can only be called from a coroutine. <code>scope.launch{}</code> starts a coroutine. In composables, <code>rememberCoroutineScope()</code> provides a scope tied to the composable lifecycle.',
+    code:`<span class="kw">val</span> scope = <span class="fn">rememberCoroutineScope</span>()\n\nmodifier = Modifier.<span class="fn">clickable</span> {\n    <span class="fn">onDelete</span>(playlist)\n    scope.<span class="fn">launch</span> { sheetState.<span class="fn">hide</span>() }  <span class="cmt">// suspend → needs coroutine</span>\n        .<span class="fn">invokeOnCompletion</span> { <span class="fn">onDismiss</span>() }\n}`,
+    where:'📍 Ch6 PlaylistBottomSheet' },
+
+  { cat:'Flow', term:'invokeOnCompletion{}', tagline:'Execute a callback when a coroutine Job finishes',
+    def:'Called on a <code>Job</code> — the object returned by <code>scope.launch{}</code>. The callback runs when the coroutine finishes. Used to call <code>onDismiss()</code> only after the sheet close animation completes, preventing a jarring abrupt disappearance.',
+    code:`<span class="fn">onDelete</span>(playlist)                         <span class="cmt">// Step 1: action</span>\nscope.<span class="fn">launch</span> { sheetState.<span class="fn">hide</span>() }         <span class="cmt">// Step 2: animate</span>\n    .<span class="fn">invokeOnCompletion</span> { <span class="fn">onDismiss</span>() }    <span class="cmt">// Step 3: clean up after animation</span>`,
+    where:'📍 Ch6 PlaylistBottomSheet' },
+
+  // ── STATE ────────────────────────────────────────────────────────────────
+  { cat:'State', term:'remember { }', tagline:'Preserve a value across recompositions',
+    def:'Caches a value in the composition so it survives recompositions. Without <code>remember</code>, the value resets every time the composable recomposes. Does NOT survive configuration changes like rotation — for that, use a ViewModel.',
+    code:`<span class="kw">var</span> showLogoutDialog <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>(<span class="kw">false</span>) }\n<span class="kw">var</span> selectedPlaylist  <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>&lt;<span class="typ">Playlist</span>?&gt;(<span class="kw">null</span>) }`,
+    where:'📍 Ch3 ProfileScreen · Ch5 LibraryScreen' },
+
+  { cat:'State', term:'mutableStateOf()', tagline:'Local Compose state that triggers recomposition when changed',
+    def:'Creates a <code>MutableState</code> — a value container that Compose observes. When the value changes, Compose recomposes every composable that reads it. Always wrapped in <code>remember { }</code> for local UI state.',
+    code:`<span class="kw">var</span> showDialog <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>(<span class="kw">false</span>) }\n\n<span class="fn">Button</span>(onClick = { showDialog = <span class="kw">true</span> }) { <span class="fn">Text</span>(<span class="str">"Log Out"</span>) }\n<span class="kw">if</span> (showDialog) { <span class="fn">AlertDialog</span>(...) }`,
+    where:'📍 Ch3 ProfileScreen · Ch5 LibraryScreen' },
+
+  { cat:'State', term:'collectAsStateWithLifecycle()', tagline:'Collect a StateFlow as Compose State, lifecycle-aware',
+    def:'Converts a <code>StateFlow</code> into a Compose <code>State</code> the UI can observe. Lifecycle-aware — stops collecting when the screen is not visible and resumes when it is. Preferred over <code>collectAsState()</code>.',
+    code:`<span class="kw">val</span> userName        <span class="kw">by</span> sessionViewModel.userName.<span class="fn">collectAsStateWithLifecycle</span>()\n<span class="kw">val</span> filteredPlaylist <span class="kw">by</span> viewModel.filteredPlaylist.<span class="fn">collectAsStateWithLifecycle</span>()`,
+    where:'📍 Ch3 ProfileScreen · Ch5 LibraryScreen · Ch7 SearchScreen' },
+
+  { cat:'State', term:'Recomposition', tagline:'Compose re-executes composables when their state changes',
+    def:'When a state value observed by a composable changes, Compose schedules a recomposition — calls the function again with the new state. Only composables that actually read the changed value recompose, not the entire screen.',
+    code:`<span class="cmt">// Without key: may recompose all items on any change</span>\n<span class="fn">items</span>(filteredPlaylist) { playlist -> ... }\n\n<span class="cmt">// With key: only the changed item recomposes</span>\n<span class="fn">items</span>(filteredPlaylist, key = { it.id }) { playlist -> ... }`,
+    where:'📍 Concept — Ch5 LibraryScreen · Ch7 SearchScreen' },
+
+  { cat:'State', term:'State hoisting', tagline:'Move state up so a composable becomes stateless and reusable',
+    def:'A pattern where state is moved from a composable to its caller. The composable receives the current value and a callback to request changes — it never owns or modifies state directly. This makes composables stateless, reusable, and easier to test.',
+    code:`<span class="cmt">// LibraryScreen does not navigate — it reports the tap</span>\n<span class="kw">fun</span> <span class="fn">LibraryScreen</span>(\n    onNavigateToPlaylistDetail: (<span class="typ">Playlist</span>) -> <span class="typ">Unit</span>\n) {\n    <span class="fn">PlaylistCard</span>(onClick = { <span class="fn">onNavigateToPlaylistDetail</span>(playlist) })\n}\n<span class="cmt">// MainScreen decides what to do with the tap</span>`,
+    where:'📍 Design pattern used in every screen' },
+
+  { cat:'State', term:'@OptIn(ExperimentalMaterial3Api::class)', tagline:'Acknowledge use of an experimental API',
+    def:'Some Compose APIs are marked experimental — functional but may change in future versions. Annotating with <code>@OptIn</code> suppresses the compiler error. In this course: <code>ExperimentalMaterial3Api</code> for <code>TopAppBar</code> and <code>SearchBar</code>, <code>ExperimentalFoundationApi</code> for <code>combinedClickable</code>.',
+    code:`@<span class="typ">OptIn</span>(ExperimentalMaterial3Api::<span class="kw">class</span>)\n@<span class="typ">Composable</span>\n<span class="kw">fun</span> <span class="fn">LibraryScreen</span>(...) { ... }   <span class="cmt">// uses TopAppBar</span>\n\n@<span class="typ">OptIn</span>(ExperimentalFoundationApi::<span class="kw">class</span>)\n@<span class="typ">Composable</span>\n<span class="kw">fun</span> <span class="fn">PlaylistCard</span>(...) { ... }    <span class="cmt">// uses combinedClickable</span>`,
+    where:'📍 Ch4 PlaylistCard · Ch5 LibraryScreen · Ch7 SearchScreen' },
+
+  // ── LAYOUT ───────────────────────────────────────────────────────────────
+  { cat:'Layout', term:'Scaffold · paddingValues', tagline:'Material 3 layout — manages bars and content insets',
+    def:'Handles placement of <code>TopAppBar</code>, <code>bottomBar</code>, and other slots. Calculates <code>paddingValues</code> — the insets content needs to avoid being hidden behind bars. Always apply <code>paddingValues</code> to the top-level content composable.',
+    code:`<span class="fn">Scaffold</span>(\n    topBar    = { <span class="fn">TopAppBar</span>(...) },\n    bottomBar = { <span class="fn">BottomNavigationBar</span>(...) }\n) { paddingValues ->             <span class="cmt">// ALWAYS apply</span>\n    <span class="fn">LazyVerticalGrid</span>(\n        modifier = Modifier.<span class="fn">padding</span>(paddingValues)\n    ) { ... }\n}`,
+    where:'📍 Ch2 MainScreen · Ch5 LibraryScreen' },
+
+  { cat:'Layout', term:'LazyVerticalGrid · GridCells', tagline:'Efficient multi-column grid that only renders visible items',
+    def:'Renders items in a grid, only composing visible items. <code>GridCells.Adaptive(minSize)</code> auto-calculates columns while keeping each cell at least <code>minSize</code> wide — responsive without extra logic. <code>GridCells.Fixed(n)</code> always uses exactly n columns.',
+    code:`<span class="fn">LazyVerticalGrid</span>(\n    columns               = GridCells.<span class="fn">Adaptive</span>(minSize = <span class="num">160</span>.dp),\n    horizontalArrangement = Arrangement.<span class="fn">spacedBy</span>(<span class="num">8</span>.dp),\n    verticalArrangement   = Arrangement.<span class="fn">spacedBy</span>(<span class="num">8</span>.dp)\n) {\n    <span class="fn">items</span>(list, key = { it.id }) { item -> <span class="fn">PlaylistCard</span>(...) }\n}`,
+    where:'📍 Ch5 LibraryScreen' },
+
+  { cat:'Layout', term:'aspectRatio(1f)', tagline:'Force height to equal width — makes the composable square',
+    def:'Constrains a composable so its height maintains a fixed ratio to its width. A ratio of <code>1f</code> means height = width — a perfect square. Without it, cards in a grid would have inconsistent heights.',
+    code:`<span class="fn">Card</span>(\n    modifier = Modifier\n        .<span class="fn">fillMaxWidth</span>()\n        .<span class="fn">aspectRatio</span>(<span class="num">1f</span>)   <span class="cmt">// height = width → square</span>\n)`,
+    where:'📍 Ch4 PlaylistCard' },
+
+  { cat:'Layout', term:'weight(1f)', tagline:'Fill all available space in a Column or Row',
+    def:'Inside a <code>Column</code> or <code>Row</code>, <code>weight(n)</code> divides available space proportionally. An item with <code>weight(1f)</code> takes all remaining space after items without weight are measured.',
+    code:`<span class="fn">Column</span>(modifier = Modifier.<span class="fn">fillMaxSize</span>()) {\n    <span class="fn">Box</span>(modifier = Modifier.<span class="fn">weight</span>(<span class="num">1f</span>))  <span class="cmt">// takes all remaining space</span>\n    <span class="fn">Column</span>(Modifier.<span class="fn">padding</span>(<span class="num">8</span>.dp)) {\n        <span class="fn">Text</span>(playlist.name)           <span class="cmt">// only takes what it needs</span>\n    }\n}`,
+    where:'📍 Ch4 PlaylistCard — color cover Box' },
+
+  { cat:'Layout', term:'combinedClickable', tagline:'Handle both tap and long-press on the same composable',
+    def:'A Compose modifier from <code>ExperimentalFoundationApi</code> that handles <code>onClick</code> (tap) and <code>onLongClick</code> (long press) on the same composable. A tap navigates to detail; a long press opens the BottomSheet.',
+    code:`.<span class="fn">combinedClickable</span>(\n    onClick     = { <span class="fn">onNavigateToPlaylistDetail</span>(playlist) },\n    onLongClick = { selectedPlaylist = playlist }\n)`,
+    where:'📍 Ch4 PlaylistCard' },
+
+  { cat:'Layout', term:'padding() — three uses', tagline:'Three different kinds of padding in this course',
+    def:'There are three distinct uses of <code>padding()</code>: applying Scaffold insets (mandatory to avoid content hiding behind bars), outer margin around the grid, and inner padding inside a composable.',
+    code:`Modifier.<span class="fn">padding</span>(paddingValues)       <span class="cmt">// 1. Scaffold insets — REQUIRED</span>\nModifier.<span class="fn">padding</span>(<span class="num">8</span>.dp)                <span class="cmt">// 2. outer margin around grid</span>\nModifier.<span class="fn">padding</span>(horizontal = <span class="num">16</span>.dp)  <span class="cmt">// 3. inner padding</span>`,
+    where:'📍 Every screen in the course' },
+
+  { cat:'Layout', term:'fillMaxSize() · fillMaxWidth()', tagline:'Expand a composable to fill available space',
+    def:'<code>fillMaxSize()</code> fills all available width and height. <code>fillMaxWidth()</code> fills only width, leaving height determined by content. Used on screen-level composables and cards.',
+    code:`<span class="cmt">// Screen fills entire area</span>\n<span class="fn">Box</span>(modifier = Modifier.<span class="fn">fillMaxSize</span>(), contentAlignment = Alignment.Center)\n\n<span class="cmt">// Card fills grid cell width, height set by aspectRatio</span>\n<span class="fn">Card</span>(modifier = Modifier.<span class="fn">fillMaxWidth</span>().<span class="fn">aspectRatio</span>(<span class="num">1f</span>))`,
+    where:'📍 Every screen and PlaylistCard' },
+
+  { cat:'Layout', term:'items(list, key = { it.id })', tagline:'Iterate a list in a lazy layout with a unique key per item',
+    def:'The DSL function used inside <code>LazyVerticalGrid</code> and <code>LazyColumn</code> to iterate a list. The <code>key</code> parameter gives Compose a stable identifier per item — only the affected item recomposes when the list changes.',
+    code:`<span class="fn">items</span>(filteredPlaylist, key = { it.id }) { playlist ->\n    <span class="fn">PlaylistCard</span>(\n        playlist    = playlist,\n        onClick     = { <span class="fn">onNavigateToPlaylistDetail</span>(playlist) },\n        onLongClick = { selectedPlaylist = playlist }\n    )\n}`,
+    where:'📍 Ch5 LibraryScreen · Ch7 SearchScreen' },
+
+  // ── COMPONENTS ───────────────────────────────────────────────────────────
+  { cat:'Components', term:'TabRow · Tab', tagline:'Switch views within the same screen — no NavController',
+    def:'<code>TabRow</code> renders a row of tabs with an animated indicator. Each <code>Tab</code> is selected when its index matches <code>selectedTabIndex</code>. Unlike <code>NavigationBar</code>, it does not involve navigation — it only changes which content is displayed.',
+    code:`<span class="fn">TabRow</span>(selectedTabIndex = selectedTab) {\n    <span class="fn">listOf</span>(<span class="str">"All"</span>, <span class="str">"Favorites"</span>).<span class="fn">forEachIndexed</span> { index, title ->\n        <span class="fn">Tab</span>(\n            selected = selectedTab == index,\n            onClick  = { viewModel.<span class="fn">onTabSelected</span>(index) },\n            text     = { <span class="fn">Text</span>(title) }\n        )\n    }\n}`,
+    where:'📍 Ch5 LibraryScreen' },
+
+  { cat:'Components', term:'ModalBottomSheet · SheetState', tagline:'Slide-up modal panel with animated open and close',
+    def:'Slides up from the bottom. Modal — while visible, the background dims and the rest of the app is non-interactive. <code>SheetState</code> controls the animation. <code>sheetState.hide()</code> is a suspend function that animates the close.',
+    code:`<span class="kw">val</span> sheetState = <span class="fn">rememberModalBottomSheetState</span>()\n<span class="fn">ModalBottomSheet</span>(\n    onDismissRequest = onDismiss,\n    sheetState       = sheetState\n) {\n    <span class="cmt">// content inside the sheet</span>\n}`,
+    where:'📍 Ch6 PlaylistBottomSheet' },
+
+  { cat:'Components', term:'ListItem', tagline:'Material 3 row with fixed zones for icon, text, subtitle',
+    def:'A Material 3 composable for structured list rows with defined slots: <code>headlineContent</code> (main text), <code>leadingContent</code> (left icon), <code>supportingContent</code> (subtitle). Cleaner than building Row + Icon + Text manually.',
+    code:`<span class="fn">ListItem</span>(\n    headlineContent   = { <span class="fn">Text</span>(<span class="str">"Add to favorites"</span>) },\n    leadingContent    = { <span class="fn">Icon</span>(Icons.Default.Favorite, <span class="kw">null</span>) },\n    supportingContent = { <span class="fn">Text</span>(<span class="str">"15 songs · Rock"</span>) },\n    modifier          = Modifier.<span class="fn">clickable</span> { ... }\n)`,
+    where:'📍 Ch6 PlaylistBottomSheet · Ch7 SearchScreen' },
+
+  { cat:'Components', term:'AlertDialog', tagline:'Modal dialog asking the user to confirm or cancel',
+    def:'A Material 3 dialog that blocks interaction with the rest of the app. Contains <code>title</code>, <code>text</code>, <code>confirmButton</code>, and optional <code>dismissButton</code>. Controlled by a Boolean state — only rendered when <code>true</code>.',
+    code:`<span class="kw">if</span> (showLogoutDialog) {\n    <span class="fn">AlertDialog</span>(\n        onDismissRequest = { showLogoutDialog = <span class="kw">false</span> },\n        title = { <span class="fn">Text</span>(<span class="str">"Log Out"</span>) },\n        text  = { <span class="fn">Text</span>(<span class="str">"Are you sure?"</span>) },\n        confirmButton = { <span class="fn">TextButton</span>(onClick = { <span class="fn">onLogout</span>() }) { <span class="fn">Text</span>(<span class="str">"Log Out"</span>) } },\n        dismissButton = { <span class="fn">TextButton</span>(onClick = { showLogoutDialog = <span class="kw">false</span> }) { <span class="fn">Text</span>(<span class="str">"Cancel"</span>) } }\n    )\n}`,
+    where:'📍 Ch3 ProfileScreen' },
+
+  { cat:'Components', term:'SearchBar · SearchBarDefaults.InputField', tagline:'Material 3 search component with collapsed and expanded states',
+    def:'A Material 3 search component with two states: collapsed (shows only the bar) and expanded (fills the screen showing results). The current API requires an <code>inputField</code> slot with <code>SearchBarDefaults.InputField</code> inside.',
+    code:`<span class="fn">SearchBar</span>(\n    inputField = {\n        SearchBarDefaults.<span class="fn">InputField</span>(\n            query = query, onQueryChange = viewModel::onQueryChange,\n            expanded = isSearchActive, onExpandedChange = viewModel::onSearchActiveChange\n        )\n    },\n    expanded = isSearchActive, onExpandedChange = viewModel::onSearchActiveChange\n) { <span class="fn">LazyColumn</span> { ... } }`,
+    where:'📍 Ch7 SearchScreen' },
+
+  { cat:'Components', term:'NavigationBar · NavigationBarItem', tagline:'Material 3 bottom nav bar for switching main sections',
+    def:'<code>NavigationBar</code> hosts <code>NavigationBarItem</code>s — one per main section. Unlike <code>TabRow</code>, each item triggers real navigation via <code>NavController</code>. The <code>selected</code> parameter highlights the active tab.',
+    code:`<span class="fn">NavigationBar</span> {\n    items.<span class="fn">forEach</span> { (route, icon, label) ->\n        <span class="fn">NavigationBarItem</span>(\n            selected = currentRoute == route,\n            onClick  = { <span class="fn">onNavigate</span>(route) },\n            icon     = { <span class="fn">Icon</span>(icon, label) },\n            label    = { <span class="fn">Text</span>(label) }\n        )\n    }\n}`,
+    where:'📍 Ch2 BottomNavigationBar' },
+
+  { cat:'Components', term:'toColorInt() · Color(hex)', tagline:'Convert a HEX string to a Compose Color',
+    def:'<code>toColorInt()</code> is an AndroidX KTX extension that parses a HEX color string into an <code>Int</code>. Wrapping it in <code>Color()</code> converts it to a Compose Color. Required because <code>Playlist</code> stores colors as strings.',
+    code:`<span class="cmt">// playlist.colorHex = "#E91E63"</span>\n.<span class="fn">background</span>(<span class="typ">Color</span>(playlist.colorHex.<span class="fn">toColorInt</span>()))\n\n<span class="cmt">// Required import:</span>\n<span class="kw">import</span> androidx.core.graphics.toColorInt`,
+    where:'📍 Ch4 PlaylistCard — color cover Box' },
+
+  // ── NAVIGATION ───────────────────────────────────────────────────────────
+  { cat:'Navigation', term:'NavController · NavHostController', tagline:'The object that manages navigation and back stack',
+    def:'Tracks the back stack and navigates between composable destinations. Created with <code>rememberNavController()</code>. This course uses two independent controllers — one in <code>SoundInNavGraph</code> (outer) and one in <code>MainScreen</code> (inner).',
+    code:`<span class="kw">val</span> navController = <span class="fn">rememberNavController</span>()\nnavController.<span class="fn">navigate</span>(SoundInRoutes.MAIN)\nnavController.<span class="fn">popBackStack</span>()`,
+    where:'📍 Ch2 SoundInNavGraph · Ch2 MainScreen' },
+
+  { cat:'Navigation', term:'NavHost · composable()', tagline:'Register all navigation destinations',
+    def:'<code>NavHost</code> is the container that maps route strings to composable screens. Each <code>composable(route)</code> registers a destination. When <code>navigate()</code> is called, <code>NavHost</code> finds the matching composable and displays it.',
+    code:`<span class="fn">NavHost</span>(navController = navController, startDestination = SoundInRoutes.LOGIN) {\n    <span class="fn">composable</span>(SoundInRoutes.LOGIN)   { <span class="fn">LoginScreen</span>(...) }\n    <span class="fn">composable</span>(SoundInRoutes.REGISTER) { <span class="fn">RegisterScreen</span>(...) }\n    <span class="fn">composable</span>(SoundInRoutes.MAIN)    { <span class="fn">MainScreen</span>(...) }\n}`,
+    where:'📍 Ch2 SoundInNavGraph · Ch2 MainScreen' },
+
+  { cat:'Navigation', term:'popUpTo() · inclusive', tagline:'Clear destinations from the back stack when navigating',
+    def:'Removes all destinations from the back stack down to the specified route before navigating. <code>inclusive = true</code> also removes that route itself. Used to prevent return to Login after login, and to prevent tab stacking.',
+    code:`<span class="cmt">// After login — user cannot go back to Login</span>\nnavController.<span class="fn">navigate</span>(SoundInRoutes.MAIN) {\n    <span class="fn">popUpTo</span>(SoundInRoutes.LOGIN) { inclusive = <span class="kw">true</span> }\n}\n\n<span class="cmt">// Tabs — prevent stacking multiple Library screens</span>\nnavController.<span class="fn">navigate</span>(route) {\n    <span class="fn">popUpTo</span>(navController.graph.startDestinationId) { saveState = <span class="kw">true</span> }\n}`,
+    where:'📍 Ch2 MainScreen · Ch3 SoundInNavGraph' },
+
+  { cat:'Navigation', term:'launchSingleTop · saveState · restoreState', tagline:'Navigation options that make tab switching work correctly',
+    def:'Three options used together in the bottom nav. <code>launchSingleTop</code> prevents stacking if already on that tab. <code>saveState</code> saves scroll position when leaving. <code>restoreState</code> restores it when returning.',
+    code:`navController.<span class="fn">navigate</span>(route) {\n    launchSingleTop = <span class="kw">true</span>   <span class="cmt">// no duplicate on same tab</span>\n    saveState       = <span class="kw">true</span>   <span class="cmt">// save scroll when leaving</span>\n    restoreState    = <span class="kw">true</span>   <span class="cmt">// restore scroll when returning</span>\n}`,
+    where:'📍 Ch2 MainScreen — BottomNavigationBar onNavigate' },
+
+  { cat:'Navigation', term:'currentBackStackEntryAsState() · currentRoute', tagline:'Know which screen is visible to highlight the correct tab',
+    def:'<code>currentBackStackEntryAsState()</code> converts the current back stack entry into a Compose State. Every navigation triggers a recomposition — the <code>NavigationBar</code> re-renders with the correct tab highlighted.',
+    code:`<span class="kw">val</span> currentBackStackEntry <span class="kw">by</span> navController.<span class="fn">currentBackStackEntryAsState</span>()\n<span class="kw">val</span> currentRoute = currentBackStackEntry?.destination?.route\n\n<span class="fn">NavigationBarItem</span>(selected = currentRoute == route, ...)`,
+    where:'📍 Ch2 MainScreen' },
+
+  { cat:'Navigation', term:'Dynamic routes · navArgument() · NavType.IntType', tagline:'Pass a typed value through the navigation URL',
+    def:'A dynamic route contains a placeholder in curly braces, e.g. <code>"playlistDetail/{playlistId}"</code>. <code>navArgument()</code> declares the expected argument and its type. <code>NavType.IntType</code> tells Navigation to deserialize the URL string back into an <code>Int</code>.',
+    code:`navController.<span class="fn">navigate</span>(<span class="str">"playlistDetail/\${playlist.id}"</span>)  <span class="cmt">// navigate</span>\n\n<span class="fn">composable</span>(\n    route     = <span class="str">"playlistDetail/{playlistId}"</span>,\n    arguments = <span class="fn">listOf</span>(<span class="fn">navArgument</span>(<span class="str">"playlistId"</span>) { type = NavType.IntType })\n) { backStackEntry ->\n    <span class="kw">val</span> id = backStackEntry.arguments?.<span class="fn">getInt</span>(<span class="str">"playlistId"</span>) ?: <span class="num">0</span>\n}`,
+    where:'📍 Ch2 SoundInNavGraph — PLAYLIST_DETAIL' },
+
+  { cat:'Navigation', term:'popBackStack()', tagline:'Remove current screen and return to the previous one',
+    def:'Removes the top destination from the back stack and navigates back to whatever was below it — equivalent to the system back button. Used in <code>PlaylistDetailScreen</code> back arrow.',
+    code:`<span class="fn">PlaylistDetailScreen</span>(\n    onNavigateBack = { navController.<span class="fn">popBackStack</span>() }\n)\n\n<span class="fn">IconButton</span>(onClick = onNavigateBack) {\n    <span class="fn">Icon</span>(Icons.AutoMirrored.Filled.ArrowBack, <span class="str">"Back"</span>)\n}`,
+    where:'📍 Ch2 SoundInNavGraph · Ch2 PlaylistDetailScreen' },
+
+  { cat:'Navigation', term:'Two independent NavControllers', tagline:'The outer flow and inner flow use separate controllers',
+    def:'This app uses two completely independent <code>NavController</code> instances. The outer one handles Login → Register → Main. The inner one handles Library ↔ Search ↔ Profile ↔ PlaylistDetail. They do not share a back stack.',
+    code:`<span class="cmt">// Outer NavController — SoundInNavGraph</span>\nLOGIN → REGISTER → MAIN\n\n<span class="cmt">// Inner NavController — MainScreen</span>\nLIBRARY ↔ SEARCH ↔ PROFILE\n    ↓\nPLAYLIST_DETAIL  <span class="cmt">// in outer → BottomBar hides</span>`,
+    where:'📍 Ch2 — architecture explained' },
+
+  // ── ARCHITECTURE ─────────────────────────────────────────────────────────
+  { cat:'Architecture', term:'ViewModel', tagline:'Survives configuration changes — holds state above composables',
+    def:'An Android Architecture Component that holds and manages UI-related state. Survives configuration changes like screen rotation — composables are destroyed and recreated, but the ViewModel persists. State that must survive rotation lives in a ViewModel.',
+    code:`<span class="kw">class</span> <span class="typ">LibraryViewModel</span> : <span class="typ">ViewModel</span>() {\n    <span class="cmt">// selectedTab survives rotation — lives in ViewModel</span>\n    <span class="kw">private val</span> _selectedTab = <span class="fn">MutableStateFlow</span>(<span class="num">0</span>)\n}`,
+    where:'📍 Every ViewModel in the course' },
+
+  { cat:'Architecture', term:'Repository Pattern', tagline:'A single class that owns all data — ViewModels read from it',
+    def:'Centralizes data management. Instead of each ViewModel having its own hardcoded list, all ViewModels read from and write to a single Repository. Deleting a playlist in Library also removes it from Search because both read the same source.',
+    code:`<span class="cmt">// Without Repository — two independent lists ❌</span>\n<span class="kw">class</span> <span class="typ">LibraryViewModel</span> { <span class="kw">val</span> playlists = <span class="fn">MutableStateFlow</span>(<span class="fn">listOf</span>(...)) }\n<span class="kw">class</span> <span class="typ">SearchViewModel</span>  { <span class="kw">val</span> playlists = <span class="fn">MutableStateFlow</span>(<span class="fn">listOf</span>(...)) }\n\n<span class="cmt">// With Repository — one shared source ✅</span>\n<span class="kw">class</span> <span class="typ">LibraryViewModel</span> { <span class="kw">val</span> playlists = PlaylistRepository.playlists }\n<span class="kw">class</span> <span class="typ">SearchViewModel</span>  { <span class="kw">val</span> playlists = PlaylistRepository.playlists }`,
+    where:'📍 Ch1 PlaylistRepository' },
+
+  { cat:'Architecture', term:'Single source of truth', tagline:'One authoritative location for each piece of data',
+    def:'Each piece of data has exactly one owner. Every other part of the app reads from that owner — never keeps a copy. When the owner changes the data, all readers update automatically. <code>PlaylistRepository</code> is the single source of truth for playlists.',
+    code:`<span class="kw">object</span> <span class="typ">PlaylistRepository</span> {\n    <span class="kw">private val</span> _playlists = <span class="fn">MutableStateFlow</span>(<span class="fn">listOf</span>(...))\n    <span class="kw">val</span> playlists = _playlists.<span class="fn">asStateFlow</span>()  <span class="cmt">// read-only for others</span>\n    <span class="kw">fun</span> <span class="fn">deletePlaylist</span>(p: <span class="typ">Playlist</span>) { ... }   <span class="cmt">// only way to modify</span>\n}`,
+    where:'📍 Ch1 concept · used in Ch4, Ch7' },
+
+  { cat:'Architecture', term:'Activity-level ViewModel', tagline:'Instantiated once and shared across all screens',
+    def:'When <code>viewModel()</code> is called inside each screen independently, each gets a different instance with different data. By instantiating once in <code>MainActivity</code> and passing it down as a parameter, all screens share the same instance.',
+    code:`<span class="cmt">// MainActivity — once at Activity level</span>\n<span class="kw">val</span> sessionViewModel: <span class="typ">UserSessionViewModel</span> = <span class="fn">viewModel</span>()\n\n<span class="cmt">// Passed through SoundInNavGraph → MainScreen → ProfileScreen</span>\n<span class="cmt">// All three see the same instance and the same session data</span>`,
+    where:'📍 Ch3 MainActivity · UserSessionViewModel' },
+
+  { cat:'Architecture', term:'In-memory Repository', tagline:'Repository in RAM — the professional pattern before a database',
+    def:'Stores data in RAM using a <code>MutableStateFlow</code> list. Data is lost when the app closes. Professional developers use this when the backend or database is not yet ready. When Room or Retrofit is added later, only the Repository changes.',
+    code:`<span class="cmt">// Current — UI Advanced</span>\nUI → ViewModel → Repository (in-memory MutableStateFlow)\n\n<span class="cmt">// Future — Persistence course</span>\nUI → ViewModel → Repository → Room (local database)\n\n<span class="cmt">// Further future</span>\nUI → ViewModel → Repository → Retrofit (remote API)`,
+    where:'📍 Ch1 PlaylistRepository' },
+
+  // ── MATERIAL ─────────────────────────────────────────────────────────────
+  { cat:'Material', term:'primary · onPrimary', tagline:'The brand color and what sits on top of it',
+    def:'<code>primary</code> is the main brand color — TopAppBar background, TabRow, avatar circle, active NavigationBarItem. <code>onPrimary</code> is for content placed on top of a <code>primary</code> background — TopAppBar title, avatar initial. Never use <code>onPrimary</code> on a white background.',
+    code:`TopAppBarDefaults.<span class="fn">topAppBarColors</span>(\n    containerColor    = MaterialTheme.colorScheme.primary,    <span class="cmt">// purple bar</span>\n    titleContentColor = MaterialTheme.colorScheme.onPrimary   <span class="cmt">// white text</span>\n)`,
+    where:'📍 Ch3 ProfileScreen · Ch5 LibraryScreen · Ch2 BottomNav' },
+
+  { cat:'Material', term:'onSurface · onSurfaceVariant', tagline:'Primary and secondary text colors on white backgrounds',
+    def:'<code>onSurface</code> is the main text color for white/surface backgrounds — high emphasis, most important text. <code>onSurfaceVariant</code> is secondary text — lower emphasis. Using both creates visual hierarchy without changing font size.',
+    code:`<span class="cmt">// name is primary info — onSurface (default)</span>\n<span class="fn">Text</span>(text = userName, style = MaterialTheme.typography.titleLarge)\n\n<span class="cmt">// email is secondary — onSurfaceVariant</span>\n<span class="fn">Text</span>(text = userEmail, color = MaterialTheme.colorScheme.onSurfaceVariant)`,
+    where:'📍 Ch3 ProfileScreen · Ch4 PlaylistCard · Ch7 SearchScreen' },
+
+  { cat:'Material', term:'error', tagline:'The color for destructive actions and error states',
+    def:'The Material 3 semantic color for destructive actions, validation errors, and warning states. Used consistently so the user immediately understands an action is irreversible or dangerous.',
+    code:`<span class="cmt">// AlertDialog — Log Out confirm in red</span>\n<span class="fn">Text</span>(<span class="str">"Log Out"</span>, color = MaterialTheme.colorScheme.error)\n\n<span class="cmt">// BottomSheet — Delete option in red</span>\n<span class="fn">Text</span>(<span class="str">"Delete playlist"</span>, color = MaterialTheme.colorScheme.error)\n<span class="fn">Icon</span>(..., tint = MaterialTheme.colorScheme.error)`,
+    where:'📍 Ch3 ProfileScreen · Ch6 PlaylistBottomSheet' },
+
+  { cat:'Material', term:'Color roles — the system', tagline:'How Material 3 creates consistent visual hierarchy',
+    def:'Material 3 defines color roles — semantic names describing how a color is used, not what color it is. This means the same design works across any theme without changing code. Each <code>on*</code> role is always used on top of its corresponding background role.',
+    code:`<span class="cmt">// Rule: always pair container + onContainer</span>\nprimary     → onPrimary        <span class="cmt">// TopAppBar bg → TopAppBar text</span>\nsurface     → onSurface        <span class="cmt">// white bg → main text</span>\nsurface     → onSurfaceVariant <span class="cmt">// white bg → secondary text</span>\n\n<span class="cmt">// VIOLATION — never do this:</span>\n<span class="fn">Text</span>(color = MaterialTheme.colorScheme.onPrimary) <span class="cmt">// on white → invisible</span>`,
+    where:'📍 Concept — Ch3 ProfileScreen explanation' },
+];
+
+var deck = [...ALL_CARDS];
+var current = 0;
+var flipped = false;
+var rightIds = new Set();
+var wrongIds = new Set();
+var currentCat = 'all';
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function catStyle(cat) {
+  const c = CAT_COLORS[cat] || { bg:'#EEF2FF', color:'#4F46E5' };
+  return `background:${c.bg};color:${c.color};`;
+}
+
+function renderCard() {
+  const completeBox = document.getElementById('completeBox');
+  const cardArea    = document.getElementById('cardArea');
+  const frontAct    = document.getElementById('frontActions');
+  const backAct     = document.getElementById('backActions');
+
+  if (current >= deck.length) {
+    cardArea.style.display  = 'none';
+    frontAct.style.display  = 'none';
+    backAct.style.display   = 'none';
+    document.querySelector('.keyboard-hint').style.display = 'none';
+    completeBox.classList.remove('hidden');
+    document.getElementById('cRight').textContent = rightIds.size;
+    document.getElementById('cWrong').textContent = wrongIds.size;
+    const pct = Math.round((rightIds.size / deck.length) * 100);
+    document.getElementById('completeSub').textContent =
+      pct >= 80
+        ? `You scored ${pct}% — great job! Review the ones you missed to nail them.`
+        : `You scored ${pct}%. Keep going — practice makes permanent.`;
+    return;
+  }
+
+  const card = deck[current];
+  flipped = false;
+  cardArea.classList.remove('flipped');
+  frontAct.classList.remove('hidden');
+  backAct.classList.add('hidden');
+
+  document.getElementById('frontCat').textContent = card.cat;
+  document.getElementById('frontCat').style.cssText = catStyle(card.cat);
+  document.getElementById('frontTerm').textContent = card.term;
+  document.getElementById('frontTagline').textContent = card.tagline;
+
+  document.getElementById('backCat').textContent = card.cat;
+  document.getElementById('backCat').style.cssText = catStyle(card.cat);
+  document.getElementById('backDef').innerHTML =
+    `<div style="margin-bottom:10px;">${card.def}</div>` +
+    `<div class="card-code">${card.code}</div>` +
+    `<div class="card-where">${card.where}</div>`;
+
+  updateProgress();
+}
+
+function updateProgress() {
+  const total   = deck.length;
+  const done    = rightIds.size + wrongIds.size;
+  const pct     = total ? Math.round((done / total) * 100) : 0;
+  const cardNum = Math.min(current + 1, total);
+
+  document.getElementById('progressLabel').textContent   = `Card ${cardNum} of ${total}`;
+  document.getElementById('progressCounter').textContent = `${pct}% complete`;
+  document.getElementById('progressFill').style.width   = pct + '%';
+  document.getElementById('rightCount').textContent      = rightIds.size;
+  document.getElementById('wrongCount').textContent      = wrongIds.size;
+  document.getElementById('leftCount').textContent       = Math.max(0, total - done);
+}
+
+function flipCard() {
+  if (current >= deck.length) return;
+  flipped = !flipped;
+  document.getElementById('cardArea').classList.toggle('flipped', flipped);
+  document.getElementById('frontActions').classList.toggle('hidden', flipped);
+  document.getElementById('backActions').classList.toggle('hidden', !flipped);
+}
+
+function mark(correct) {
+  if (!flipped || current >= deck.length) return;
+  const idx = current;
+  if (correct) rightIds.add(idx); else wrongIds.add(idx);
+  current++;
+  renderCard();
+}
+
+function filterCat(cat) {
+  currentCat = cat;
+  rightIds.clear(); wrongIds.clear(); current = 0;
+
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  const labels = { all:'All', Kotlin:'Kotlin', Lambdas:'Lambdas', Flow:'Flow', State:'State', Layout:'Layout', Components:'Components', Navigation:'Navigation', Architecture:'Architecture', Material:'Material 3' };
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    const txt = b.textContent.replace(/\s*\(\d+\)/, '').trim().replace('⟳ ','');
+    const key = Object.keys(labels).find(k => labels[k] === txt || k === txt);
+    if ((cat === 'all' && txt.startsWith('All')) || key === cat) b.classList.add('active');
+  });
+
+  if (cat === 'all') {
+    deck = shuffle([...ALL_CARDS]);
+  } else {
+    deck = shuffle(ALL_CARDS.filter(c => c.cat === cat));
+  }
+
+  document.getElementById('completeBox').classList.add('hidden');
+  document.getElementById('cardArea').style.display = '';
+  document.getElementById('frontActions').style.display = '';
+  document.querySelector('.keyboard-hint').style.display = '';
+  renderCard();
+}
+
+function filterPractice() {
+  const wrongCards = ALL_CARDS.filter((_, i) => wrongIds.has(i));
+  if (!wrongCards.length) { alert('No cards marked for practice yet!'); return; }
+  deck = shuffle([...wrongCards]);
+  rightIds.clear(); wrongIds.clear(); current = 0;
+  document.getElementById('completeBox').classList.add('hidden');
+  document.getElementById('cardArea').style.display = '';
+  document.getElementById('frontActions').style.display = '';
+  document.querySelector('.keyboard-hint').style.display = '';
+  renderCard();
+}
+
+function resetDeck() {
+  filterCat(currentCat === 'all' ? 'all' : currentCat);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space')       { e.preventDefault(); flipCard(); }
+  if (e.code === 'ArrowRight')  { if (flipped) mark(true); }
+  if (e.code === 'ArrowLeft')   { if (flipped) mark(false); }
+});
+
+filterCat('all');
+</script>
+</body>
+</html>

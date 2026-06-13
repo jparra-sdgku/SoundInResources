@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glossary | SoundIn UI Advanced</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary:#4F46E5;--primary-dark:#3730A3;--primary-light:#EEF2FF;--accent:#7C3AED;
+    --surface:#FFFFFF;--bg:#F8F9FF;--border:#E0E7FF;--text:#1F1F2E;--text-muted:#6B7280;--text-light:#9CA3AF;
+    --success:#059669;--success-bg:#ECFDF5;--warning:#D97706;--warning-bg:#FFFBEB;
+    --info:#2563EB;--info-bg:#EFF6FF;
+    --code-bg:#1E1E2E;--code-text:#CDD6F4;--code-comment:#6C7086;--code-keyword:#CBA6F7;
+    --code-string:#A6E3A1;--code-type:#89DCEB;--code-number:#FAB387;
+    --nav-h:60px;--sidebar-w:260px;--radius:10px;--radius-lg:16px;
+    --shadow:0 1px 3px rgba(79,70,229,.08),0 1px 2px rgba(0,0,0,.06);
+    --shadow-md:0 4px 16px rgba(79,70,229,.10),0 2px 4px rgba(0,0,0,.06);
+
+    /* category accent colors */
+    --cat-kotlin:#E8562A;
+    --cat-lambda:#DB2777;
+    --cat-flow:#7C3AED;
+    --cat-compose:#0EA5E9;
+    --cat-nav:#059669;
+    --cat-arch:#D97706;
+    --cat-material:#DC2626;
+    --cat-androidx:#6366F1;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:15px;}
+
+  /* ── TOP NAV ── */
+  .topnav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:100;box-shadow:var(--shadow);}
+  .topnav-brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;color:var(--primary);text-decoration:none;}
+  .topnav-brand .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;}
+  .topnav-course{font-size:13px;color:var(--text-muted);background:var(--primary-light);padding:4px 12px;border-radius:20px;font-weight:500;}
+  .nav-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;transition:all .18s;border:1px solid var(--border);color:var(--text-muted);background:var(--surface);}
+  .nav-btn:hover{background:var(--primary-light);color:var(--primary);border-color:var(--primary);}
+
+  /* ── SIDEBAR ── */
+  .sidebar{position:fixed;top:var(--nav-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:24px 0;z-index:90;}
+  .sidebar-section-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--text-light);text-transform:uppercase;padding:0 20px 8px;margin-top:16px;}
+  .sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;text-decoration:none;color:var(--text-muted);transition:all .15s;position:relative;}
+  .sidebar-link:hover{background:var(--primary-light);color:var(--primary);}
+  .sidebar-link.active{background:var(--primary-light);color:var(--primary);font-weight:500;}
+  .sidebar-link.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary);border-radius:0 3px 3px 0;}
+  .sidebar-link .ch-badge{font-size:10px;font-weight:600;min-width:22px;height:18px;border-radius:4px;background:var(--border);color:var(--text-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sidebar-link.active .ch-badge{background:var(--primary);color:#fff;}
+  .cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+  /* ── MAIN ── */
+  .main{margin-left:var(--sidebar-w);margin-top:var(--nav-h);padding:48px 56px 80px;max-width:1100px;}
+
+  /* ── SEARCH BAR ── */
+  .search-wrap{position:sticky;top:var(--nav-h);z-index:80;background:var(--bg);padding:16px 0 12px;}
+  .search-input{width:100%;padding:12px 16px 12px 44px;border:1px solid var(--border);border-radius:var(--radius);font-family:'Sora',sans-serif;font-size:14px;background:var(--surface);color:var(--text);outline:none;transition:border .18s;}
+  .search-input:focus{border-color:var(--primary);}
+  .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-light);}
+  .search-container{position:relative;}
+  #no-results{display:none;text-align:center;padding:40px;color:var(--text-muted);font-size:14px;}
+
+  /* ── PAGE HEADER ── */
+  .ch-header{margin-bottom:40px;padding-bottom:32px;border-bottom:1px solid var(--border);}
+  .ch-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--primary);text-transform:uppercase;background:var(--primary-light);padding:5px 14px;border-radius:20px;margin-bottom:16px;}
+  .ch-title{font-size:32px;font-weight:600;line-height:1.2;color:var(--text);margin-bottom:12px;}
+  .ch-subtitle{font-size:16px;color:var(--text-muted);line-height:1.6;max-width:700px;}
+
+  /* ── CATEGORY SECTIONS ── */
+  .cat-section{margin-bottom:56px;}
+  .cat-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--primary-light);}
+  .cat-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;color:#fff;letter-spacing:.04em;text-transform:uppercase;}
+  .cat-title{font-size:20px;font-weight:600;color:var(--text);}
+  .cat-count{font-size:12px;color:var(--text-light);margin-left:auto;}
+
+  /* ── TERM CARDS ── */
+  .terms-grid{display:flex;flex-direction:column;gap:12px;}
+  .term-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow .18s;}
+  .term-card:hover{box-shadow:var(--shadow-md);}
+  .term-card-header{display:flex;align-items:flex-start;gap:16px;padding:16px 20px;cursor:pointer;user-select:none;}
+  .term-name{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--primary);flex:1;}
+  .term-tagline{font-size:13px;color:var(--text-muted);margin-top:2px;}
+  .term-chevron{font-size:12px;color:var(--text-light);transition:transform .2s;flex-shrink:0;margin-top:4px;}
+  .term-card.open .term-chevron{transform:rotate(90deg);}
+  .term-body{display:none;padding:0 20px 20px;border-top:1px solid var(--border);}
+  .term-card.open .term-body{display:block;}
+  .term-section-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin:14px 0 6px;}
+  .term-desc{font-size:14px;color:var(--text);line-height:1.7;margin-bottom:8px;}
+  .code-snippet{background:var(--code-bg);border-radius:var(--radius);padding:14px 16px;margin:8px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:var(--code-text);overflow-x:auto;}
+  .kw{color:var(--code-keyword);}.str{color:var(--code-string);}.cmt{color:var(--code-comment);font-style:italic;}
+  .typ{color:var(--code-type);}.num{color:var(--code-number);}.fn{color:#89B4FA;}
+  .term-where{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--text-muted);background:var(--primary-light);padding:3px 8px;border-radius:4px;margin-top:10px;}
+
+  p{margin-bottom:8px;}p:last-child{margin-bottom:0;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--primary-light);color:var(--primary);padding:1px 5px;border-radius:4px;}
+
+  ::-webkit-scrollbar{width:6px;height:6px;}::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}::-webkit-scrollbar-thumb:hover{background:#C7D2FE;}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="topnav-brand" href="#"><div class="logo">S</div>SoundIn</a>
+  <span class="topnav-course">UI Advanced — Glossary</span>
+  <a class="nav-btn" href="ch1.html">← Back to chapters</a>
+</nav>
+
+<aside class="sidebar">
+  <div class="sidebar-section-label">Course chapters</div>
+  <a class="sidebar-link" href="ch1.html"><span class="ch-badge">1</span>Introduction</a>
+  <a class="sidebar-link" href="ch2.html"><span class="ch-badge">2</span>BottomNav &amp; Placeholders</a>
+  <a class="sidebar-link" href="ch3.html"><span class="ch-badge">3</span>Session &amp; Profile</a>
+  <a class="sidebar-link" href="ch4.html"><span class="ch-badge">4</span>Library ViewModel &amp; Card</a>
+  <a class="sidebar-link" href="ch5.html"><span class="ch-badge">5</span>LibraryScreen</a>
+  <a class="sidebar-link" href="ch6.html"><span class="ch-badge">6</span>PlaylistBottomSheet</a>
+  <a class="sidebar-link" href="ch7.html"><span class="ch-badge">7</span>Search</a>
+  <div class="sidebar-section-label" style="margin-top:24px;">Categories</div>
+  <a class="sidebar-link" href="#kotlin"><span class="cat-dot" style="background:#E8562A;"></span>Kotlin Fundamentals</a>
+  <a class="sidebar-link" href="#lambdas"><span class="cat-dot" style="background:#DB2777;"></span>Functions &amp; Lambdas</a>
+  <a class="sidebar-link" href="#flow"><span class="cat-dot" style="background:#7C3AED;"></span>Coroutines &amp; Flow</a>
+  <a class="sidebar-link" href="#compose-state"><span class="cat-dot" style="background:#0EA5E9;"></span>Compose — State</a>
+  <a class="sidebar-link" href="#compose-layout"><span class="cat-dot" style="background:#0EA5E9;"></span>Compose — Layout</a>
+  <a class="sidebar-link" href="#compose-components"><span class="cat-dot" style="background:#0EA5E9;"></span>Compose — Components</a>
+  <a class="sidebar-link" href="#navigation"><span class="cat-dot" style="background:#059669;"></span>Navigation</a>
+  <a class="sidebar-link" href="#architecture"><span class="cat-dot" style="background:#D97706;"></span>Architecture</a>
+  <a class="sidebar-link" href="#material"><span class="cat-dot" style="background:#DC2626;"></span>Material 3 Colors</a>
+</aside>
+
+<main class="main">
+
+  <div class="ch-header">
+    <div class="ch-eyebrow">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5H2zm0 3h12v1.5H2zm0 3h8v1.5H2z"/></svg>
+      Reference
+    </div>
+    <h1 class="ch-title">Glossary</h1>
+    <p class="ch-subtitle">Every term, operator, function, and pattern used in SoundIn UI Advanced — organized by category with definitions, code examples, and where each term appears in the course.</p>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <div class="search-container">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/></svg>
+      <input class="search-input" type="text" id="glossarySearch" placeholder="Search terms — e.g. combine, by, stateIn…" autocomplete="off">
+    </div>
+  </div>
+  <div id="no-results">No terms match your search.</div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 1. KOTLIN FUNDAMENTALS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="cat-section" id="kotlin">
+    <div class="cat-header">
+      <span class="cat-badge" style="background:#E8562A;">Kotlin</span>
+      <span class="cat-title">Kotlin Fundamentals</span>
+      <span class="cat-count">14 terms</span>
+    </div>
+    <div class="terms-grid">
+
+      <div class="term-card" data-terms="val var immutable mutable property">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">val / var</div><div class="term-tagline">Immutable vs mutable variable declaration</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>val</code> declares a read-only variable — its reference cannot be reassigned after initialization. <code>var</code> declares a mutable variable that can be reassigned at any time. In ViewModels, public state is always <code>val</code> (read-only) and private mutable state is also <code>val</code> (the StateFlow itself doesn't change, only its <code>.value</code> does).</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">val</span> name = <span class="str">"John"</span>          <span class="cmt">// cannot reassign name = "Jane"</span>
+<span class="kw">var</span> count = <span class="num">0</span>            <span class="cmt">// can reassign count = 1</span>
+<span class="kw">private val</span> _query = <span class="fn">MutableStateFlow</span>(<span class="str">""</span>)  <span class="cmt">// val, but .value can change</span></div>
+          <span class="term-where">📍 Used in every file</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="by delegate property kotlin">
+        <div class="term-card-header" onclick="toggleCard(this)">
+<p class="term-desc"><code>by</code> is a Kotlin keyword that delegates a property to another object. In Compose, it is used with <code>collectAsStateWithLifecycle()</code> and <code>remember { mutableStateOf() }</code> so you can write <code>userName</code> directly instead of <code>userName.value</code> everywhere in the composable.</p>
+<p class="term-desc"><strong>Why not in ViewModels?</strong> Inside a ViewModel, <code>_query</code> is a raw <code>MutableStateFlow</code> — it does not implement the Kotlin delegation interface, so <code>by</code> delegation is not available there. The rule is simple: use <code>by</code> in composables, use <code>.value</code> in ViewModels.</p>          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>by</code> is a Kotlin keyword that delegates a property to another object. In Compose, it is used with <code>collectAsStateWithLifecycle()</code> and <code>remember { mutableStateOf() }</code> so you can write <code>userName</code> directly instead of <code>userName.value</code> everywhere in the composable.</p>
+          <div class="term-section-label">Without vs with by</div>
+          <div class="code-snippet"><span class="cmt">// Without by — must write .value every time</span>
+<span class="kw">val</span> userName: <span class="typ">State</span>&lt;<span class="typ">String</span>&gt; = viewModel.userName.<span class="fn">collectAsStateWithLifecycle</span>()
+<span class="fn">Text</span>(userName.value)
+
+<span class="cmt">// With by — reads like a plain variable</span>
+<span class="kw">val</span> userName <span class="kw">by</span> viewModel.userName.<span class="fn">collectAsStateWithLifecycle</span>()
+<span class="fn">Text</span>(userName)</div>
+          <span class="term-where">📍 Ch3 ProfileScreen · Ch5 LibraryScreen · Ch7 SearchScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="data class copy immutable model playlist song">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">data class</div><div class="term-tagline">Model class with auto-generated equals, hashCode, copy, toString</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A <code>data class</code> is a Kotlin class designed to hold data. The compiler automatically generates <code>equals()</code>, <code>hashCode()</code>, <code>toString()</code>, and most importantly <code>copy()</code>. The <code>copy()</code> function creates a new instance with some fields changed — essential for immutable state updates in the Repository.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">data class</span> <span class="typ">Playlist</span>(
+    <span class="kw">val</span> id: <span class="typ">Int</span>,
+    <span class="kw">val</span> name: <span class="typ">String</span>,
+    <span class="kw">val</span> isFavorite: <span class="typ">Boolean</span> = <span class="kw">false</span>
+)
+
+<span class="cmt">// copy() — create a new instance changing only isFavorite</span>
+<span class="kw">val</span> updated = playlist.<span class="fn">copy</span>(isFavorite = <span class="kw">true</span>)</div>
+          <span class="term-where">📍 Ch1 — Playlist.kt · Song.kt</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="object singleton instance one">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">object</div><div class="term-tagline">Singleton — only one instance exists in the entire app</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>object</code> declares a singleton — a class that the Kotlin runtime instantiates exactly once. Every part of the app that references an <code>object</code> gets the same instance. Used for <code>PlaylistRepository</code> so all ViewModels share a single list of playlists.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">object</span> <span class="typ">PlaylistRepository</span> {   <span class="cmt">// one instance for the entire app</span>
+    <span class="kw">private val</span> _playlists = <span class="fn">MutableStateFlow</span>(<span class="fn">listOf</span>(...))
+    <span class="kw">val</span> playlists = _playlists.<span class="fn">asStateFlow</span>()
+}</div>
+          <span class="term-where">📍 Ch1 — PlaylistRepository.kt</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="safe call null nullable optional question dot">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">?. — Safe call operator</div><div class="term-tagline">Executes only if the value is not null</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">The safe call operator <code>?.</code> calls a function or accesses a property only if the object is not <code>null</code>. If it is <code>null</code>, the entire expression returns <code>null</code> instead of throwing a <code>NullPointerException</code>.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// currentRoute is null during navigation transitions</span>
+<span class="kw">val</span> currentRoute = currentBackStackEntry?.destination?.route
+
+<span class="cmt">// userName.firstOrNull() returns null if the string is empty</span>
+userName.<span class="fn">firstOrNull</span>()?.<span class="fn">uppercaseChar</span>()?.<span class="fn">toString</span>() ?: <span class="str">"?"</span></div>
+          <span class="term-where">📍 Ch2 MainScreen · Ch3 ProfileScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="elvis operator null fallback default coalesce">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">?: — Elvis operator</div><div class="term-tagline">Provides a fallback value when the left side is null</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">The Elvis operator <code>?:</code> returns the left side if it is not <code>null</code>, or the right side if it is. It is commonly chained after safe calls to provide a safe default value, avoiding null checks with <code>if/else</code>.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// If getInt() returns null, use 0 as fallback</span>
+<span class="kw">val</span> playlistId = backStackEntry.arguments?.<span class="fn">getInt</span>(<span class="str">"playlistId"</span>) ?: <span class="num">0</span>
+
+<span class="cmt">// If the chain returns null, show "?"</span>
+<span class="kw">val</span> initial = userName.<span class="fn">firstOrNull</span>()?.<span class="fn">uppercaseChar</span>()?.<span class="fn">toString</span>() ?: <span class="str">"?"</span></div>
+          <span class="term-where">📍 Ch2 SoundInNavGraph · Ch3 ProfileScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="let scope function null check block">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">?.let { }</div><div class="term-tagline">Executes a block only when the value is not null</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>?.let { }</code> combines a safe call with the <code>let</code> scope function. The block executes only if the value is not <code>null</code>. Inside the lambda, the non-null value is available as <code>it</code> (or a named parameter). Used to conditionally show the <code>PlaylistBottomSheet</code> only when a playlist is selected.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// selectedPlaylist is Playlist? — can be null</span>
+<span class="cmt">// The block only runs when the user long-presses a card</span>
+selectedPlaylist?.<span class="fn">let</span> { playlist ->
+    <span class="fn">PlaylistBottomSheet</span>(
+        playlist  = playlist,
+        onDismiss = { selectedPlaylist = <span class="kw">null</span> }
+    )
+}</div>
+          <span class="term-where">📍 Ch6 LibraryScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="when expression switch case condition">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">when</div><div class="term-tagline">Multi-branch conditional expression — Kotlin's switch</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>when</code> is Kotlin's replacement for Java's <code>switch</code>. Unlike <code>switch</code>, <code>when</code> is an expression — it returns a value. Every branch produces a result. Used in <code>LibraryViewModel</code> to decide which list to return based on the selected tab index.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">when</span> (tabIndex) {
+    <span class="num">0</span>    -> playlists                           <span class="cmt">// All tab</span>
+    <span class="num">1</span>    -> playlists.<span class="fn">filter</span> { it.isFavorite } <span class="cmt">// Favorites tab</span>
+    <span class="kw">else</span> -> playlists                           <span class="cmt">// fallback</span>
+}</div>
+          <span class="term-where">📍 Ch4 LibraryViewModel</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="filter map foreach forEachIndexed firstOrNull contains isBlank collection">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">filter() · map() · forEach · forEachIndexed</div><div class="term-tagline">Standard collection operations on lists</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Kotlin's standard library functions for working with collections. All of them receive a lambda and operate on each element.</p>
+          <div class="term-section-label">Each one</div>
+          <div class="code-snippet"><span class="cmt">// filter — keeps only elements that match the condition</span>
+playlists.<span class="fn">filter</span> { it.isFavorite }
+
+<span class="cmt">// map — transforms each element into something else</span>
+_playlists.value = _playlists.value.<span class="fn">map</span> {
+    <span class="kw">if</span> (it.id == playlist.id) it.<span class="fn">copy</span>(isFavorite = !it.isFavorite) <span class="kw">else</span> it
+}
+
+<span class="cmt">// forEach — iterates without returning a new list</span>
+items.<span class="fn">forEach</span> { (route, icon, label) -> <span class="fn">NavigationBarItem</span>(...) }
+
+<span class="cmt">// forEachIndexed — same as forEach but also gives the index</span>
+tabs.<span class="fn">forEachIndexed</span> { index, title -> <span class="fn">Tab</span>(selected = selectedTab == index) }</div>
+          <span class="term-where">📍 Ch1 Repository · Ch2 BottomNav · Ch5 LibraryScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="firstOrNull string char safe null empty">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">firstOrNull()</div><div class="term-tagline">Returns the first element or null if the collection is empty</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Returns the first character (or element) of a string or collection. Unlike <code>first()</code>, it returns <code>null</code> instead of throwing an exception when the string is empty. Safe to chain with <code>?.</code> operators.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet">userName.<span class="fn">firstOrNull</span>()?.<span class="fn">uppercaseChar</span>()?.<span class="fn">toString</span>() ?: <span class="str">"?"</span>
+<span class="cmt">// "John Doe" → "J"   |   "" → "?"</span></div>
+          <span class="term-where">📍 Ch3 ProfileScreen — avatar initial</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="contains isBlank isEmpty search filter string">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">contains() · isBlank() · isEmpty()</div><div class="term-tagline">String checks used in search filtering</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>contains(query, ignoreCase)</code> returns <code>true</code> if the string includes the given substring. <code>isBlank()</code> returns <code>true</code> if the string is empty or contains only whitespace — safer than <code>isEmpty()</code> which only checks for zero characters.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// isBlank() is safer — "   " is blank but not empty</span>
+<span class="kw">if</span> (query.<span class="fn">isBlank</span>()) {
+    playlists  <span class="cmt">// show all if nothing typed</span>
+} <span class="kw">else</span> {
+    playlists.<span class="fn">filter</span> {
+        it.name.<span class="fn">contains</span>(query, ignoreCase = <span class="kw">true</span>) ||
+        it.genre.<span class="fn">contains</span>(query, ignoreCase = <span class="kw">true</span>)
+    }
+}</div>
+          <span class="term-where">📍 Ch7 SearchViewModel</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="string template interpolation dollar brace">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">String templates — ${}</div><div class="term-tagline">Embed values directly inside strings</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Kotlin string templates allow you to embed expressions directly inside a string using <code>${expression}</code> or <code>$variable</code> for simple names. The runtime evaluates the expression and converts it to a string automatically.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="fn">Text</span>(<span class="str">"${playlist.songCount} songs"</span>)   <span class="cmt">// "15 songs"</span>
+navController.<span class="fn">navigate</span>(<span class="str">"playlistDetail/${playlist.id}"</span>)  <span class="cmt">// "playlistDetail/3"</span></div>
+          <span class="term-where">📍 Ch4 PlaylistCard · Ch5 MainScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="pair triple data group tuple">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Pair · Triple</div><div class="term-tagline">Group 2 or 3 values without a custom data class</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>Pair</code> and <code>Triple</code> are Kotlin standard library classes that group 2 or 3 values respectively. They support destructuring in lambdas. When you need 4 or more values together, create a <code>data class</code> instead for clarity.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// Triple groups route + icon + label for each nav tab</span>
+<span class="kw">val</span> items = <span class="fn">listOf</span>(
+    <span class="fn">Triple</span>(SoundInRoutes.LIBRARY, Icons.Default.LibraryMusic, <span class="str">"Library"</span>),
+    <span class="fn">Triple</span>(SoundInRoutes.SEARCH,  Icons.Default.Search,       <span class="str">"Search"</span>)
+)
+items.<span class="fn">forEach</span> { (route, icon, label) -> <span class="cmt">// destructuring</span>
+    <span class="fn">NavigationBarItem</span>(...)
+}</div>
+          <span class="term-where">📍 Ch2 BottomNavigationBar</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="copy immutable update change state">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">copy()</div><div class="term-tagline">Create a new data class instance with some fields changed</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Generated automatically by <code>data class</code>. Creates a new instance copying all fields, replacing only the ones you specify. Essential for updating immutable state — you never mutate an existing object, you create a new one with the change applied.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// Toggle isFavorite without mutating the original</span>
+_playlists.value = _playlists.value.<span class="fn">map</span> {
+    <span class="kw">if</span> (it.id == playlist.id)
+        it.<span class="fn">copy</span>(isFavorite = !it.isFavorite)
+    <span class="kw">else</span> it
+}</div>
+          <span class="term-where">📍 Ch1 PlaylistRepository — toggleFavorite()</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 2. FUNCTIONS & LAMBDAS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="cat-section" id="lambdas">
+    <div class="cat-header">
+      <span class="cat-badge" style="background:#DB2777;">Functions &amp; Lambdas</span>
+      <span class="cat-title">Functions &amp; Lambdas</span>
+      <span class="cat-count">5 terms</span>
+    </div>
+    <div class="terms-grid">
+
+      <div class="term-card" data-terms="unit function type void return nothing callback">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">() -> Unit</div><div class="term-tagline">A function type that takes no parameters and returns nothing</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>() -> Unit</code> is a Kotlin function type. The parentheses <code>()</code> list the parameter types (empty = no parameters), and <code>Unit</code> is the return type meaning "returns nothing" — equivalent to <code>void</code> in Java. Used for callbacks like <code>onLogout</code> and <code>onDismiss</code>.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">fun</span> <span class="fn">ProfileScreen</span>(
+    onLogout: () -> <span class="typ">Unit</span>   <span class="cmt">// parameter that IS a function</span>
+) {
+    <span class="fn">Button</span>(onClick = { <span class="fn">onLogout</span>() }) { <span class="fn">Text</span>(<span class="str">"Log Out"</span>) }
+}</div>
+          <span class="term-where">📍 Every screen signature in the course</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="function type parameter playlist string callback higher order">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">(Playlist) -> Unit · (String) -> Unit</div><div class="term-tagline">Function types with parameters</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">The same pattern as <code>() -> Unit</code> but with typed parameters. <code>(Playlist) -> Unit</code> means "a function that receives a Playlist and returns nothing." These are used for callbacks that need to pass data upward — state hoisting in practice.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">fun</span> <span class="fn">LibraryScreen</span>(
+    onNavigateToPlaylistDetail: (<span class="typ">Playlist</span>) -> <span class="typ">Unit</span>  <span class="cmt">// receives a Playlist</span>
+) {
+    <span class="fn">PlaylistCard</span>(
+        onClick = { <span class="fn">onNavigateToPlaylistDetail</span>(playlist) } <span class="cmt">// passes it up</span>
+    )
+}</div>
+          <span class="term-where">📍 Ch5 LibraryScreen · Ch7 SearchScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="lambda anonymous function block curly brace trailing">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Lambda</div><div class="term-tagline">An anonymous function passed as a value</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A lambda is an anonymous function — a function without a name that you pass as a value. In Kotlin, lambdas are written between curly braces <code>{ }</code>. When a lambda is the last parameter of a function, it can be moved outside the parentheses — this is called a <strong>trailing lambda</strong>.</p>
+          <div class="term-section-label">Regular vs trailing lambda</div>
+          <div class="code-snippet"><span class="cmt">// Regular lambda as parameter</span>
+<span class="fn">Button</span>(onClick = { viewModel.<span class="fn">logout</span>() })
+
+<span class="cmt">// Trailing lambda — moved outside parentheses</span>
+<span class="fn">Button</span>(onClick = { viewModel.<span class="fn">logout</span>() }) {
+    <span class="fn">Text</span>(<span class="str">"Log Out"</span>)   <span class="cmt">// this is also a trailing lambda (content slot)</span>
+}
+
+<span class="cmt">// The SearchBar trailing lambda holds the results list</span>
+<span class="fn">SearchBar</span>(inputField = { ... }) {
+    <span class="fn">LazyColumn</span> { ... }  <span class="cmt">// content shown when SearchBar is expanded</span>
+}</div>
+          <span class="term-where">📍 Every composable in the course</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="function reference double colon higher order operator">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">:: — Function reference operator</div><div class="term-tagline">Pass a function as a value without calling it</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>::</code> creates a reference to a function so it can be passed as a value without being called immediately. When the lambda does nothing except call a single function and pass its argument through directly, <code>::</code> is a cleaner equivalent.</p>
+          <div class="term-section-label">Lambda vs :: reference</div>
+          <div class="code-snippet"><span class="cmt">// These two are exactly equivalent:</span>
+onQueryChange = { query -> viewModel.<span class="fn">onQueryChange</span>(query) }
+onQueryChange = viewModel::onQueryChange   <span class="cmt">// cleaner with ::</span>
+
+<span class="cmt">// Use lambda when the body does something extra</span>
+onQueryChange = { query ->
+    viewModel.<span class="fn">onQueryChange</span>(query)
+    <span class="fn">analytics</span>.<span class="fn">log</span>(<span class="str">"search"</span>)   <span class="cmt">// extra work — need full lambda</span>
+}</div>
+          <span class="term-where">📍 Ch7 SearchScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="default parameter value optional argument function">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Default parameter values — = {}</div><div class="term-tagline">Make a parameter optional by providing a default</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A parameter with a default value does not need to be passed by the caller. In Compose, function-type parameters often default to <code>{}</code> (an empty lambda that does nothing) so the composable can be used without wiring up every callback — useful for Previews and incremental development.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">fun</span> <span class="fn">PlaylistCard</span>(
+    playlist:    <span class="typ">Playlist</span>,
+    onClick:     () -> <span class="typ">Unit</span>,
+    onLongClick: () -> <span class="typ">Unit</span> = {}  <span class="cmt">// optional — defaults to do nothing</span>
+)
+
+<span class="cmt">// Can call without onLongClick in Ch4 before BottomSheet exists</span>
+<span class="fn">PlaylistCard</span>(playlist = p, onClick = { ... })</div>
+          <span class="term-where">📍 Ch4 PlaylistCard · Previews throughout</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 3. COROUTINES & FLOW -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="cat-section" id="flow">
+    <div class="cat-header">
+      <span class="cat-badge" style="background:#7C3AED;">Coroutines &amp; Flow</span>
+      <span class="cat-title">Coroutines &amp; Flow</span>
+      <span class="cat-count">9 terms</span>
+    </div>
+    <div class="terms-grid">
+
+      <div class="term-card" data-terms="MutableStateFlow state flow mutable hot stream">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">MutableStateFlow</div><div class="term-tagline">A hot stream whose value can be changed directly</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A <code>MutableStateFlow</code> holds a single value that can be updated via <code>.value =</code>. It is always "hot" — it always has a current value and emits to all active collectors when the value changes. Always declared <code>private</code> in ViewModels so only the ViewModel can modify it.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">private val</span> _query = <span class="fn">MutableStateFlow</span>(<span class="str">""</span>)
+
+<span class="kw">fun</span> <span class="fn">onQueryChange</span>(query: <span class="typ">String</span>) {
+    _query.value = query   <span class="cmt">// triggers all collectors</span>
+}</div>
+          <span class="term-where">📍 Ch3 UserSessionViewModel · Ch4 LibraryViewModel · Ch7 SearchViewModel</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="StateFlow read only public expose observable">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">StateFlow · asStateFlow()</div><div class="term-tagline">Read-only public view of a MutableStateFlow</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>StateFlow</code> is the read-only interface of <code>MutableStateFlow</code>. The UI can observe it but cannot modify it. <code>asStateFlow()</code> converts a <code>MutableStateFlow</code> into a <code>StateFlow</code> — the standard pattern for private mutable state exposed as public read-only state.</p>
+          <div class="term-section-label">Pattern</div>
+          <div class="code-snippet"><span class="cmt">// private — only ViewModel can write</span>
+<span class="kw">private val</span> _query = <span class="fn">MutableStateFlow</span>(<span class="str">""</span>)
+
+<span class="cmt">// public — UI can only read</span>
+<span class="kw">val</span> query: <span class="typ">StateFlow</span>&lt;<span class="typ">String</span>&gt; = _query.<span class="fn">asStateFlow</span>()</div>
+          <span class="term-where">📍 Every ViewModel in the course</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="value assign update write set mutablestateflow">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">.value</div><div class="term-tagline">Read or write the current value of a MutableStateFlow</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>.value</code> accesses the current value held by a <code>MutableStateFlow</code>. Assigning to it (<code>_query.value = "rock"</code>) triggers all collectors — every part of the UI observing this flow updates automatically. Reading from it (<code>_query.value</code>) returns the current value synchronously.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// Write — triggers recomposition in all observers</span>
+_isLoggedIn.value = <span class="kw">true</span>
+
+<span class="cmt">// Read — synchronous, always available</span>
+<span class="kw">val</span> current = _query.value</div>
+          <span class="term-where">📍 Every ViewModel in the course</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="combine merge two flows stateflow reactive">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">combine()</div><div class="term-tagline">Merge two or more StateFlows into one reactive result</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>combine()</code> takes 2–5 <code>StateFlow</code> sources and a lambda. Every time any source emits a new value, the lambda runs automatically and produces a new result. Think of it as: "whenever X changes OR Y changes, recalculate." The result is a cold <code>Flow</code> — convert it to a hot <code>StateFlow</code> with <code>stateIn()</code>.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">val</span> filteredPlaylist = <span class="fn">combine</span>(
+    PlaylistRepository.playlists,   <span class="cmt">// source 1</span>
+    _selectedTab                    <span class="cmt">// source 2</span>
+) { playlists, tabIndex ->          <span class="cmt">// runs when either changes</span>
+    <span class="kw">when</span> (tabIndex) {
+        <span class="num">0</span>    -> playlists
+        <span class="num">1</span>    -> playlists.<span class="fn">filter</span> { it.isFavorite }
+        <span class="kw">else</span> -> playlists
+    }
+}.<span class="fn">stateIn</span>(...)</div>
+          <span class="term-where">📍 Ch4 LibraryViewModel · Ch7 SearchViewModel</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="stateIn cold hot convert flow stateflow scope initial">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">stateIn()</div><div class="term-tagline">Convert a cold Flow into a hot StateFlow</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>stateIn()</code> converts a cold <code>Flow</code> (like the result of <code>combine()</code>) into a hot <code>StateFlow</code> that always has a value ready for the UI. Takes three parameters: <code>scope</code>, <code>started</code>, and <code>initialValue</code>.</p>
+          <div class="term-section-label">Parameters</div>
+          <div class="code-snippet">.<span class="fn">stateIn</span>(
+    scope        = viewModelScope,
+    <span class="cmt">// scope: flow lives as long as the ViewModel</span>
+
+    started      = SharingStarted.<span class="fn">WhileSubscribed</span>(<span class="num">5000</span>),
+    <span class="cmt">// WhileSubscribed(5000): stays active 5s after last</span>
+    <span class="cmt">// subscriber disconnects — handles screen rotation</span>
+
+    initialValue = <span class="fn">emptyList</span>()
+    <span class="cmt">// initialValue: what the UI gets before first emission</span>
+)</div>
+          <span class="term-where">📍 Ch4 LibraryViewModel · Ch7 SearchViewModel</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="cold hot flow stateflow difference water tap tank">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Cold Flow vs Hot StateFlow</div><div class="term-tagline">The fundamental difference between the two stream types</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A <strong>cold Flow</strong> starts executing only when someone collects it — like a water tap that only flows when opened. Each new collector gets its own independent execution. A <strong>hot StateFlow</strong> always has a current value regardless of collectors — like a water tank that is always full. <code>stateIn()</code> converts one into the other.</p>
+          <div class="term-section-label">Why it matters</div>
+          <div class="code-snippet"><span class="cmt">// combine() produces a cold Flow</span>
+<span class="cmt">// The UI would only get results while it is collecting</span>
+<span class="cmt">// During rotation, the UI briefly disconnects → data lost</span>
+
+<span class="cmt">// stateIn() converts it to a hot StateFlow</span>
+<span class="cmt">// Always has the latest value → UI reconnects instantly</span>
+<span class="cmt">// WhileSubscribed(5000) keeps it alive during rotation</span></div>
+          <span class="term-where">📍 Ch4 — concept explained in LibraryViewModel</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="viewModelScope coroutine scope lifecycle cancel">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">viewModelScope</div><div class="term-tagline">Coroutine scope tied to the ViewModel lifecycle</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A <code>CoroutineScope</code> provided by the <code>ViewModel</code> class. Coroutines launched in this scope are cancelled automatically when the ViewModel is cleared — preventing memory leaks. Used as the <code>scope</code> parameter of <code>stateIn()</code>.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet">.<span class="fn">stateIn</span>(
+    scope = viewModelScope,   <span class="cmt">// flow stops when ViewModel is cleared</span>
+    ...
+)</div>
+          <span class="term-where">📍 Ch4 LibraryViewModel · Ch7 SearchViewModel</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="suspend coroutine scope launch async function">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">suspend function · scope.launch{}</div><div class="term-tagline">Functions that can pause and resume — run them in a coroutine</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A <code>suspend</code> function can pause execution without blocking the thread and resume when ready. It can only be called from another suspend function or from a coroutine. <code>scope.launch{}</code> starts a coroutine on a given scope. In composables, <code>rememberCoroutineScope()</code> provides a scope tied to the composable's lifecycle.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">val</span> scope = <span class="fn">rememberCoroutineScope</span>()
+
+<span class="cmt">// sheetState.hide() is suspend — must run in a coroutine</span>
+modifier = Modifier.<span class="fn">clickable</span> {
+    <span class="fn">onDelete</span>(playlist)
+    scope.<span class="fn">launch</span> { sheetState.<span class="fn">hide</span>() }   <span class="cmt">// launches coroutine</span>
+        .<span class="fn">invokeOnCompletion</span> { <span class="fn">onDismiss</span>() }
+}</div>
+          <span class="term-where">📍 Ch6 PlaylistBottomSheet</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="invokeOnCompletion animation callback after finish job">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">invokeOnCompletion{}</div><div class="term-tagline">Execute a callback when a coroutine Job finishes</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>invokeOnCompletion</code> is called on a <code>Job</code> — the object returned by <code>scope.launch{}</code>. The callback runs when the coroutine finishes, whether successfully or cancelled. Used to call <code>onDismiss()</code> only after the sheet close animation has fully completed, preventing a jarring abrupt disappearance.</p>
+          <div class="term-section-label">Why order matters</div>
+          <div class="code-snippet"><span class="cmt">// Step 1: execute action</span>
+<span class="fn">onToggleFavorite</span>(playlist)
+
+<span class="cmt">// Step 2: animate close (suspend — runs asynchronously)</span>
+scope.<span class="fn">launch</span> { sheetState.<span class="fn">hide</span>() }
+
+<span class="cmt">// Step 3: clean up ONLY after animation finishes</span>
+    .<span class="fn">invokeOnCompletion</span> { <span class="fn">onDismiss</span>() }
+
+<span class="cmt">// If you called onDismiss() directly in step 1,</span>
+<span class="cmt">// the sheet disappears instantly with no animation</span></div>
+          <span class="term-where">📍 Ch6 PlaylistBottomSheet</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 4. COMPOSE — STATE -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="cat-section" id="compose-state">
+    <div class="cat-header">
+      <span class="cat-badge" style="background:#0EA5E9;">Compose</span>
+      <span class="cat-title">Compose — State</span>
+      <span class="cat-count">6 terms</span>
+    </div>
+    <div class="terms-grid">
+
+      <div class="term-card" data-terms="remember recomposition survive composable instance">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">remember { }</div><div class="term-tagline">Preserve a value across recompositions</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>remember</code> caches a value in the composition so it survives recompositions — the repeated calls Compose makes to your function when state changes. Without <code>remember</code>, the value would be reset every time the composable recomposes. It does NOT survive configuration changes like screen rotation — for that, use a ViewModel.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// showLogoutDialog resets to false only when the composable</span>
+<span class="cmt">// leaves the composition entirely, not on every recomposition</span>
+<span class="kw">var</span> showLogoutDialog <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>(<span class="kw">false</span>) }
+
+<span class="cmt">// selectedPlaylist similarly survives within a composition</span>
+<span class="kw">var</span> selectedPlaylist <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>&lt;<span class="typ">Playlist</span>?&gt;(<span class="kw">null</span>) }</div>
+          <span class="term-where">📍 Ch3 ProfileScreen · Ch5 LibraryScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="mutableStateOf state observable compose recompose trigger">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">mutableStateOf()</div><div class="term-tagline">Local Compose state that triggers recomposition when changed</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Creates a <code>MutableState</code> — a value container that Compose observes. When the value changes, Compose schedules a recomposition of every composable that reads it. Always wrapped in <code>remember { }</code> for local UI state. For state that must survive rotation, use a ViewModel with <code>MutableStateFlow</code> instead.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">var</span> showDialog <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>(<span class="kw">false</span>) }
+
+<span class="cmt">// When this changes, Compose recomposes ProfileScreen</span>
+<span class="fn">Button</span>(onClick = { showDialog = <span class="kw">true</span> }) { <span class="fn">Text</span>(<span class="str">"Log Out"</span>) }
+<span class="kw">if</span> (showDialog) { <span class="fn">AlertDialog</span>(...) }</div>
+          <span class="term-where">📍 Ch3 ProfileScreen · Ch5 LibraryScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="collectAsStateWithLifecycle lifecycle aware stateflow observe compose">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">collectAsStateWithLifecycle()</div><div class="term-tagline">Collect a StateFlow as Compose State, lifecycle-aware</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Converts a <code>StateFlow</code> from a ViewModel into a Compose <code>State</code> that the UI can observe. <strong>Lifecycle-aware</strong> — it automatically stops collecting when the screen is not visible (paused or stopped) and resumes when it becomes visible again. This prevents unnecessary background work and potential memory leaks. Preferred over <code>collectAsState()</code>.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// StateFlow → Compose State, stops when screen is hidden</span>
+<span class="kw">val</span> userName <span class="kw">by</span> sessionViewModel.userName.<span class="fn">collectAsStateWithLifecycle</span>()
+<span class="kw">val</span> filteredPlaylist <span class="kw">by</span> viewModel.filteredPlaylist.<span class="fn">collectAsStateWithLifecycle</span>()</div>
+          <span class="term-where">📍 Ch3 ProfileScreen · Ch5 LibraryScreen · Ch7 SearchScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="recomposition compose redraw update ui trigger">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Recomposition</div><div class="term-tagline">Compose re-executes composable functions when their state changes</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">When a state value observed by a composable changes, Compose schedules a <strong>recomposition</strong> — it calls the composable function again with the new state to produce an updated UI. Compose is smart about this: only the composables that actually read the changed value recompose, not the entire screen.</p>
+          <div class="term-section-label">Why key matters</div>
+          <div class="code-snippet"><span class="cmt">// Without key: Compose may recompose all items on any change</span>
+<span class="fn">items</span>(filteredPlaylist) { playlist -> ... }
+
+<span class="cmt">// With key: only the changed item recomposes</span>
+<span class="fn">items</span>(filteredPlaylist, key = { it.id }) { playlist -> ... }</div>
+          <span class="term-where">📍 Concept used in Ch5 LibraryScreen · Ch7 SearchScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="state hoisting lift move up composable pattern">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">State hoisting</div><div class="term-tagline">Move state up so a composable becomes stateless and reusable</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">State hoisting is a pattern where state is moved from a composable to its caller. The composable receives the current value and a callback to request changes — it never owns or modifies state directly. This makes composables stateless, reusable, and easier to test. It is the core pattern behind all callback parameters in this course.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// LibraryScreen does not navigate — it reports the tap</span>
+<span class="kw">fun</span> <span class="fn">LibraryScreen</span>(
+    onNavigateToPlaylistDetail: (<span class="typ">Playlist</span>) -> <span class="typ">Unit</span>  <span class="cmt">// hoisted callback</span>
+) {
+    <span class="fn">PlaylistCard</span>(onClick = { <span class="fn">onNavigateToPlaylistDetail</span>(playlist) })
+}
+<span class="cmt">// MainScreen decides what to do with the tap</span></div>
+          <span class="term-where">📍 Design pattern used in every screen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="OptIn experimental annotation API compose foundation">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">@OptIn(ExperimentalMaterial3Api::class)</div><div class="term-tagline">Acknowledge use of an experimental API to suppress compiler warnings</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Some Compose APIs are marked experimental — they are functional but may change in future versions. To use them without a compiler error, you annotate your composable with <code>@OptIn</code> to acknowledge the risk. In this course: <code>ExperimentalMaterial3Api</code> for <code>TopAppBar</code> and <code>SearchBar</code>, <code>ExperimentalFoundationApi</code> for <code>combinedClickable</code>.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet">@<span class="typ">OptIn</span>(ExperimentalMaterial3Api::<span class="kw">class</span>)
+@<span class="typ">Composable</span>
+<span class="kw">fun</span> <span class="fn">LibraryScreen</span>(...) { ... }   <span class="cmt">// uses TopAppBar</span>
+
+@<span class="typ">OptIn</span>(ExperimentalFoundationApi::<span class="kw">class</span>)
+@<span class="typ">Composable</span>
+<span class="kw">fun</span> <span class="fn">PlaylistCard</span>(...) { ... }    <span class="cmt">// uses combinedClickable</span></div>
+          <span class="term-where">📍 Ch4 PlaylistCard · Ch5 LibraryScreen · Ch7 SearchScreen</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 5. COMPOSE — LAYOUT -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="cat-section" id="compose-layout">
+    <div class="cat-header">
+      <span class="cat-badge" style="background:#0EA5E9;">Compose</span>
+      <span class="cat-title">Compose — Layout &amp; Modifiers</span>
+      <span class="cat-count">8 terms</span>
+    </div>
+    <div class="terms-grid">
+
+      <div class="term-card" data-terms="scaffold topbar bottombar padding content slot">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Scaffold · paddingValues</div><div class="term-tagline">Material 3 layout container that manages TopAppBar, BottomBar, and content insets</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>Scaffold</code> is a Material 3 layout that handles the placement of common UI elements — <code>TopAppBar</code>, <code>bottomBar</code>, <code>FloatingActionButton</code>, and <code>snackbarHost</code>. It calculates <code>paddingValues</code> — the insets the content needs to avoid being hidden behind the bars. <strong>Always apply paddingValues to the top-level content composable.</strong></p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="fn">Scaffold</span>(
+    topBar    = { <span class="fn">TopAppBar</span>(...) },
+    bottomBar = { <span class="fn">BottomNavigationBar</span>(...) }
+) { paddingValues ->             <span class="cmt">// ALWAYS apply this</span>
+    <span class="fn">LazyVerticalGrid</span>(
+        modifier = Modifier.<span class="fn">padding</span>(paddingValues)  <span class="cmt">// content starts below TopAppBar</span>
+    ) { ... }
+}</div>
+          <span class="term-where">📍 Ch2 MainScreen · Ch5 LibraryScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="lazy vertical grid columns adaptive fixed cells grid">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">LazyVerticalGrid · GridCells</div><div class="term-tagline">Efficient multi-column grid that only renders visible items</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>LazyVerticalGrid</code> renders items in a grid layout, only composing the items currently visible on screen. <code>GridCells.Adaptive(minSize)</code> automatically calculates how many columns fit while keeping each cell at least <code>minSize</code> wide — responsive without extra logic. <code>GridCells.Fixed(n)</code> always uses exactly n columns.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="fn">LazyVerticalGrid</span>(
+    columns               = GridCells.<span class="fn">Adaptive</span>(minSize = <span class="num">160</span>.dp),
+    horizontalArrangement = Arrangement.<span class="fn">spacedBy</span>(<span class="num">8</span>.dp),
+    verticalArrangement   = Arrangement.<span class="fn">spacedBy</span>(<span class="num">8</span>.dp)
+) {
+    <span class="fn">items</span>(list, key = { it.id }) { item -> <span class="fn">PlaylistCard</span>(...) }
+}</div>
+          <span class="term-where">📍 Ch5 LibraryScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="aspectRatio square width height modifier ratio">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">aspectRatio(1f)</div><div class="term-tagline">Force height to equal width — makes the composable square</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>aspectRatio(ratio)</code> constrains a composable so its height maintains a fixed ratio to its width. A ratio of <code>1f</code> means height = width — a perfect square. Without it, cards in a grid would have inconsistent heights depending on their content, breaking the visual alignment.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="fn">Card</span>(
+    modifier = Modifier
+        .<span class="fn">fillMaxWidth</span>()
+        .<span class="fn">aspectRatio</span>(<span class="num">1f</span>)   <span class="cmt">// height = width → square card</span>
+)</div>
+          <span class="term-where">📍 Ch4 PlaylistCard</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="weight fill space column row fraction">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">weight(1f)</div><div class="term-tagline">Fill all available space in a Column or Row</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Inside a <code>Column</code> or <code>Row</code>, <code>weight(n)</code> divides the available space proportionally among items that have a weight. An item with <code>weight(1f)</code> takes all remaining space after items without weight have been measured. Used in <code>PlaylistCard</code> so the color cover box fills the card and the text section only takes what it needs.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="fn">Column</span>(modifier = Modifier.<span class="fn">fillMaxSize</span>()) {
+    <span class="fn">Box</span>(modifier = Modifier.<span class="fn">weight</span>(<span class="num">1f</span>))   <span class="cmt">// takes all remaining space</span>
+    <span class="fn">Column</span>(modifier = Modifier.<span class="fn">padding</span>(<span class="num">8</span>.dp)) {
+        <span class="fn">Text</span>(playlist.name)    <span class="cmt">// only takes what it needs</span>
+        <span class="fn">Text</span>(<span class="str">"15 songs"</span>)
+    }
+}</div>
+          <span class="term-where">📍 Ch4 PlaylistCard — color cover Box</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="combinedClickable onClick onLongClick click press foundation">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">combinedClickable</div><div class="term-tagline">Handle both tap and long-press on the same composable</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A Compose modifier from <code>ExperimentalFoundationApi</code> that handles <code>onClick</code> (regular tap) and <code>onLongClick</code> (long press) on the same composable. Without it you would need two separate composables or nested gesture detectors. Used on <code>PlaylistCard</code> so a tap navigates to detail and a long press opens the BottomSheet.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet">.<span class="fn">combinedClickable</span>(
+    onClick     = { <span class="fn">onNavigateToPlaylistDetail</span>(playlist) },
+    onLongClick = { selectedPlaylist = playlist }
+)</div>
+          <span class="term-where">📍 Ch4 PlaylistCard</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="padding modifier insets space margin inner outer">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">padding() — different uses</div><div class="term-tagline">Three different kinds of padding in the course</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">There are three distinct uses of <code>padding()</code> in this course, each with a different purpose.</p>
+          <div class="term-section-label">Three uses</div>
+          <div class="code-snippet"><span class="cmt">// 1. paddingValues from Scaffold — MUST apply to avoid</span>
+<span class="cmt">//    content being hidden behind TopAppBar</span>
+Modifier.<span class="fn">padding</span>(paddingValues)
+
+<span class="cmt">// 2. Outer margin around the grid</span>
+Modifier.<span class="fn">padding</span>(<span class="num">8</span>.dp)
+
+<span class="cmt">// 3. Inner padding inside a composable</span>
+Modifier.<span class="fn">padding</span>(horizontal = <span class="num">16</span>.dp, vertical = <span class="num">8</span>.dp)</div>
+          <span class="term-where">📍 Every screen in the course</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="fillMaxSize fillMaxWidth box column row size modifier fill">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">fillMaxSize() · fillMaxWidth()</div><div class="term-tagline">Expand a composable to fill available space</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>fillMaxSize()</code> makes a composable fill all available width and height. <code>fillMaxWidth()</code> fills only the width, leaving height determined by content. Used on screen-level composables to fill the display, and on cards to fill their grid cell width.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// Screen fills the entire available area</span>
+<span class="fn">Box</span>(modifier = Modifier.<span class="fn">fillMaxSize</span>(), contentAlignment = Alignment.Center)
+
+<span class="cmt">// Card fills its grid cell width, height set by aspectRatio</span>
+<span class="fn">Card</span>(modifier = Modifier.<span class="fn">fillMaxWidth</span>().<span class="fn">aspectRatio</span>(<span class="num">1f</span>))</div>
+          <span class="term-where">📍 Every screen and PlaylistCard</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="items key lazy list recomposition performance id">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">items(list, key = { it.id })</div><div class="term-tagline">Iterate a list in a lazy layout with a unique key per item</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>items()</code> is the DSL function used inside <code>LazyVerticalGrid</code> and <code>LazyColumn</code> to iterate a list. The <code>key</code> parameter gives Compose a stable identifier per item. Without it, when the list changes (delete, reorder), Compose recomposes the entire list. With <code>key</code>, only the affected item recomposes.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="fn">items</span>(filteredPlaylist, key = { it.id }) { playlist ->
+    <span class="fn">PlaylistCard</span>(
+        playlist    = playlist,
+        onClick     = { <span class="fn">onNavigateToPlaylistDetail</span>(playlist) },
+        onLongClick = { selectedPlaylist = playlist }
+    )
+}</div>
+          <span class="term-where">📍 Ch5 LibraryScreen · Ch7 SearchScreen</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 6. COMPOSE — COMPONENTS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="cat-section" id="compose-components">
+    <div class="cat-header">
+      <span class="cat-badge" style="background:#0EA5E9;">Compose</span>
+      <span class="cat-title">Compose — Components</span>
+      <span class="cat-count">7 terms</span>
+    </div>
+    <div class="terms-grid">
+
+      <div class="term-card" data-terms="TabRow tab selected index switch content">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">TabRow · Tab</div><div class="term-tagline">Switch between views within the same screen — no NavController</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>TabRow</code> renders a horizontal row of tabs with an animated indicator under the selected one. Each <code>Tab</code> inside it shows as selected when its index matches <code>selectedTabIndex</code>. Unlike <code>NavigationBar</code>, <code>TabRow</code> does not involve navigation — it only changes which content is displayed, controlled by state in the ViewModel.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="fn">TabRow</span>(selectedTabIndex = selectedTab) {
+    <span class="fn">listOf</span>(<span class="str">"All"</span>, <span class="str">"Favorites"</span>).<span class="fn">forEachIndexed</span> { index, title ->
+        <span class="fn">Tab</span>(
+            selected = selectedTab == index,
+            onClick  = { viewModel.<span class="fn">onTabSelected</span>(index) },
+            text     = { <span class="fn">Text</span>(title) }
+        )
+    }
+}</div>
+          <span class="term-where">📍 Ch5 LibraryScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="ModalBottomSheet sheet slide modal dismiss state">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">ModalBottomSheet · SheetState</div><div class="term-tagline">A slide-up modal panel with animated open and close</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>ModalBottomSheet</code> slides up from the bottom of the screen. It is modal — while visible, the background dims and the rest of the app is non-interactive. <code>SheetState</code> (created with <code>rememberModalBottomSheetState()</code>) controls the animation. <code>sheetState.hide()</code> is a suspend function that animates the close.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">val</span> sheetState = <span class="fn">rememberModalBottomSheetState</span>()
+<span class="fn">ModalBottomSheet</span>(
+    onDismissRequest = onDismiss,
+    sheetState       = sheetState
+) {
+    <span class="cmt">// content inside the sheet</span>
+}</div>
+          <span class="term-where">📍 Ch6 PlaylistBottomSheet</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="ListItem headline supporting leading trailing material">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">ListItem</div><div class="term-tagline">Material 3 row with fixed zones for icon, main text, and subtitle</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A Material 3 composable for structured list rows. It has defined slots so you never build <code>Row + Icon + Text</code> manually for standard option rows. Cleaner and automatically styled to Material 3 guidelines.</p>
+          <div class="term-section-label">Zones</div>
+          <div class="code-snippet"><span class="fn">ListItem</span>(
+    headlineContent   = { <span class="fn">Text</span>(<span class="str">"Add to favorites"</span>) },  <span class="cmt">// center — main text</span>
+    leadingContent    = { <span class="fn">Icon</span>(Icons.Default.Favorite, <span class="kw">null</span>) }, <span class="cmt">// left</span>
+    supportingContent = { <span class="fn">Text</span>(<span class="str">"15 songs · Rock"</span>) },      <span class="cmt">// subtitle below</span>
+    modifier          = Modifier.<span class="fn">clickable</span> { ... }
+)</div>
+          <span class="term-where">📍 Ch6 PlaylistBottomSheet · Ch7 SearchScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="AlertDialog confirm dismiss dialog modal button">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">AlertDialog</div><div class="term-tagline">Modal dialog asking the user to confirm or cancel an action</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A Material 3 dialog that blocks interaction with the rest of the app until dismissed. Contains a <code>title</code>, <code>text</code>, <code>confirmButton</code>, and optional <code>dismissButton</code>. Controlled by a <code>Boolean</code> state variable — only rendered when the state is <code>true</code>.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">if</span> (showLogoutDialog) {
+    <span class="fn">AlertDialog</span>(
+        onDismissRequest = { showLogoutDialog = <span class="kw">false</span> },
+        title            = { <span class="fn">Text</span>(<span class="str">"Log Out"</span>) },
+        text             = { <span class="fn">Text</span>(<span class="str">"Are you sure?"</span>) },
+        confirmButton    = { <span class="fn">TextButton</span>(onClick = { <span class="fn">onLogout</span>() }) { <span class="fn">Text</span>(<span class="str">"Log Out"</span>) } },
+        dismissButton    = { <span class="fn">TextButton</span>(onClick = { showLogoutDialog = <span class="kw">false</span> }) { <span class="fn">Text</span>(<span class="str">"Cancel"</span>) } }
+    )
+}</div>
+          <span class="term-where">📍 Ch3 ProfileScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="SearchBar expanded query active search input field">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">SearchBar · SearchBarDefaults.InputField</div><div class="term-tagline">Material 3 search component with collapsed and expanded states</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A Material 3 search component with two states: collapsed (shows only the bar) and expanded (fills the screen showing results). The current API requires an <code>inputField</code> slot with <code>SearchBarDefaults.InputField</code> inside. The trailing lambda holds the content shown when the bar is expanded.</p>
+          <div class="term-section-label">Current API</div>
+          <div class="code-snippet"><span class="fn">SearchBar</span>(
+    inputField = {
+        SearchBarDefaults.<span class="fn">InputField</span>(
+            query            = query,
+            onQueryChange    = viewModel::onQueryChange,
+            expanded         = isSearchActive,
+            onExpandedChange = viewModel::onSearchActiveChange,
+            placeholder      = { <span class="fn">Text</span>(<span class="str">"Search playlists"</span>) }
+        )
+    },
+    expanded         = isSearchActive,
+    onExpandedChange = viewModel::onSearchActiveChange
+) {
+    <span class="fn">LazyColumn</span> { ... }   <span class="cmt">// shown when expanded</span>
+}</div>
+          <span class="term-where">📍 Ch7 SearchScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="NavigationBar NavigationBarItem tab bottom selected icon label">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">NavigationBar · NavigationBarItem</div><div class="term-tagline">Material 3 bottom navigation bar for switching main sections</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>NavigationBar</code> is the Material 3 component for the bottom navigation bar. It hosts <code>NavigationBarItem</code>s — one per main section of the app. Unlike <code>TabRow</code>, each item triggers real navigation via <code>NavController</code>. The <code>selected</code> parameter highlights the active tab by comparing <code>currentRoute</code> to the item's route.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="fn">NavigationBar</span> {
+    items.<span class="fn">forEach</span> { (route, icon, label) ->
+        <span class="fn">NavigationBarItem</span>(
+            selected = currentRoute == route,
+            onClick  = { <span class="fn">onNavigate</span>(route) },
+            icon     = { <span class="fn">Icon</span>(icon, label) },
+            label    = { <span class="fn">Text</span>(label) }
+        )
+    }
+}</div>
+          <span class="term-where">📍 Ch2 BottomNavigationBar</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="toColorInt hex color string convert compose androidX">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">toColorInt() · Color(hex)</div><div class="term-tagline">Convert a HEX string to a Compose Color</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>toColorInt()</code> is a Kotlin extension function from AndroidX Core KTX that parses a HEX color string (e.g. <code>"#E91E63"</code>) into an <code>Int</code> color value. Wrapping it in <code>Color()</code> converts it to a Compose <code>Color</code>. Required because the <code>Playlist</code> data class stores colors as strings.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// playlist.colorHex = "#E91E63" (stored as String in data class)</span>
+.<span class="fn">background</span>(<span class="typ">Color</span>(playlist.colorHex.<span class="fn">toColorInt</span>()))
+
+<span class="cmt">// Required import:</span>
+<span class="kw">import</span> androidx.core.graphics.toColorInt</div>
+          <span class="term-where">📍 Ch4 PlaylistCard — color cover Box</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 7. NAVIGATION -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="cat-section" id="navigation">
+    <div class="cat-header">
+      <span class="cat-badge" style="background:#059669;">Navigation</span>
+      <span class="cat-title">Navigation Compose</span>
+      <span class="cat-count">8 terms</span>
+    </div>
+    <div class="terms-grid">
+
+      <div class="term-card" data-terms="NavController NavHostController navigate route back stack">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">NavController · NavHostController</div><div class="term-tagline">The object that manages navigation and back stack</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>NavController</code> is the central object for navigation. It tracks the back stack and navigates between composable destinations. Created with <code>rememberNavController()</code> in a composable. <code>NavHostController</code> is the more specific interface used as a parameter type in function signatures. This course uses two independent <code>NavController</code>s — one in <code>SoundInNavGraph</code> (outer flow) and one in <code>MainScreen</code> (inner flow).</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">val</span> navController = <span class="fn">rememberNavController</span>()
+navController.<span class="fn">navigate</span>(SoundInRoutes.MAIN)
+navController.<span class="fn">popBackStack</span>()</div>
+          <span class="term-where">📍 Ch2 SoundInNavGraph · Ch2 MainScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="composable route NavHost destination register">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">NavHost · composable()</div><div class="term-tagline">Register all navigation destinations and their screens</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>NavHost</code> is the container that maps route strings to composable screens. Each <code>composable(route)</code> inside it registers a destination. When <code>NavController.navigate("library")</code> is called, <code>NavHost</code> finds the matching composable and displays it.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="fn">NavHost</span>(navController = navController, startDestination = SoundInRoutes.LOGIN) {
+    <span class="fn">composable</span>(SoundInRoutes.LOGIN)   { <span class="fn">LoginScreen</span>(...) }
+    <span class="fn">composable</span>(SoundInRoutes.REGISTER) { <span class="fn">RegisterScreen</span>(...) }
+    <span class="fn">composable</span>(SoundInRoutes.MAIN)    { <span class="fn">MainScreen</span>(...) }
+}</div>
+          <span class="term-where">📍 Ch2 SoundInNavGraph · Ch2 MainScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="popUpTo inclusive back stack clear remove login main">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">popUpTo() · inclusive</div><div class="term-tagline">Clear destinations from the back stack when navigating</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>popUpTo(route)</code> removes all destinations from the back stack down to the specified route before navigating. <code>inclusive = true</code> also removes that route itself. Used in two situations: preventing return to Login after authentication, and preventing tab stacking in the bottom nav.</p>
+          <div class="term-section-label">Two uses in this course</div>
+          <div class="code-snippet"><span class="cmt">// Use 1: user cannot go back to Login after authenticating</span>
+navController.<span class="fn">navigate</span>(SoundInRoutes.MAIN) {
+    <span class="fn">popUpTo</span>(SoundInRoutes.LOGIN) { inclusive = <span class="kw">true</span> }
+}
+
+<span class="cmt">// Use 2: tabs don't stack — pressing Library 3 times</span>
+<span class="cmt">// doesn't create 3 Library screens in the back stack</span>
+navController.<span class="fn">navigate</span>(route) {
+    <span class="fn">popUpTo</span>(navController.graph.startDestinationId) { saveState = <span class="kw">true</span> }
+    launchSingleTop = <span class="kw">true</span>
+}</div>
+          <span class="term-where">📍 Ch2 MainScreen · Ch3 SoundInNavGraph</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="launchSingleTop saveState restoreState tab navigation">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">launchSingleTop · saveState · restoreState</div><div class="term-tagline">Navigation options that make tab switching work correctly</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Three navigation options used together in the bottom nav <code>onNavigate</code> lambda to produce correct tab behavior.</p>
+          <div class="term-section-label">Each one</div>
+          <div class="code-snippet"><span class="fn">navigate</span>(route) {
+    launchSingleTop = <span class="kw">true</span>
+    <span class="cmt">// Prevents stacking if already on that tab</span>
+
+    saveState = <span class="kw">true</span>
+    <span class="cmt">// Saves scroll position when leaving a tab</span>
+
+    restoreState = <span class="kw">true</span>
+    <span class="cmt">// Restores scroll position when returning to a tab</span>
+}</div>
+          <span class="term-where">📍 Ch2 MainScreen — BottomNavigationBar onNavigate</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="backStackEntry currentBackStackEntry route current active screen">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">currentBackStackEntryAsState() · currentRoute</div><div class="term-tagline">Know which screen is currently visible to highlight the correct tab</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>currentBackStackEntryAsState()</code> converts the current navigation back stack entry into a Compose <code>State</code>. Every time the user navigates, this value updates and triggers a recomposition — the <code>NavigationBar</code> re-renders with the correct tab highlighted.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">val</span> currentBackStackEntry <span class="kw">by</span> navController.<span class="fn">currentBackStackEntryAsState</span>()
+<span class="kw">val</span> currentRoute = currentBackStackEntry?.destination?.route
+
+<span class="cmt">// passed to NavigationBar to highlight the active tab</span>
+<span class="fn">NavigationBarItem</span>(selected = currentRoute == route, ...)</div>
+          <span class="term-where">📍 Ch2 MainScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="dynamic route argument placeholder playlistId navArgument NavType">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Dynamic routes · navArgument() · NavType.IntType</div><div class="term-tagline">Pass a typed value through the navigation URL</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A dynamic route contains a placeholder in curly braces, e.g. <code>"playlistDetail/{playlistId}"</code>. When navigating, the placeholder is replaced with a real value. <code>navArgument()</code> declares the expected argument and its type. <code>NavType.IntType</code> tells Navigation to deserialize the URL string back into an <code>Int</code>.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// Navigate — replace placeholder with real id</span>
+navController.<span class="fn">navigate</span>(<span class="str">"playlistDetail/${playlist.id}"</span>)  <span class="cmt">// "playlistDetail/3"</span>
+
+<span class="cmt">// Receive — declare and extract the argument</span>
+<span class="fn">composable</span>(
+    route     = <span class="str">"playlistDetail/{playlistId}"</span>,
+    arguments = <span class="fn">listOf</span>(<span class="fn">navArgument</span>(<span class="str">"playlistId"</span>) { type = NavType.IntType })
+) { backStackEntry ->
+    <span class="kw">val</span> id = backStackEntry.arguments?.<span class="fn">getInt</span>(<span class="str">"playlistId"</span>) ?: <span class="num">0</span>
+}</div>
+          <span class="term-where">📍 Ch2 SoundInNavGraph — PLAYLIST_DETAIL</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="popBackStack navigate back previous screen">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">popBackStack()</div><div class="term-tagline">Remove the current screen from the back stack and return to the previous one</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Removes the top destination from the back stack and navigates back to whatever was below it — equivalent to pressing the system back button programmatically. Used in <code>PlaylistDetailScreen</code>'s back arrow and in <code>onNavigateBack</code> callbacks.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="fn">PlaylistDetailScreen</span>(
+    onNavigateBack = { navController.<span class="fn">popBackStack</span>() }
+)
+
+<span class="cmt">// Inside PlaylistDetailScreen TopAppBar</span>
+<span class="fn">IconButton</span>(onClick = onNavigateBack) {
+    <span class="fn">Icon</span>(Icons.AutoMirrored.Filled.ArrowBack, <span class="str">"Back"</span>)
+}</div>
+          <span class="term-where">📍 Ch2 SoundInNavGraph · Ch2 PlaylistDetailScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="two navcontroller inner outer main soundinnavgraph independent">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Two independent NavControllers</div><div class="term-tagline">The outer flow and the inner flow use separate controllers</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">This app uses two completely independent <code>NavController</code> instances. The outer one (in <code>SoundInNavGraph</code>) handles Login → Register → Main. The inner one (in <code>MainScreen</code>) handles Library ↔ Search ↔ Profile ↔ PlaylistDetail. They do not share a back stack and do not interfere with each other.</p>
+          <div class="term-section-label">Visual</div>
+          <div class="code-snippet"><span class="cmt">// Outer NavController — SoundInNavGraph</span>
+LOGIN → REGISTER → MAIN
+
+<span class="cmt">// Inner NavController — MainScreen</span>
+LIBRARY ↔ SEARCH ↔ PROFILE
+    ↓
+PLAYLIST_DETAIL (navigates to outer NavGraph)
+
+<span class="cmt">// PLAYLIST_DETAIL is in the outer NavGraph so the</span>
+<span class="cmt">// BottomNavigationBar disappears when viewing the detail</span></div>
+          <span class="term-where">📍 Ch2 — architecture explained</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 8. ARCHITECTURE -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="cat-section" id="architecture">
+    <div class="cat-header">
+      <span class="cat-badge" style="background:#D97706;">Architecture</span>
+      <span class="cat-title">Architecture</span>
+      <span class="cat-count">5 terms</span>
+    </div>
+    <div class="terms-grid">
+
+      <div class="term-card" data-terms="ViewModel lifecycle survive rotation configuration change">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">ViewModel</div><div class="term-tagline">Survives configuration changes — holds UI state above the composable layer</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A <code>ViewModel</code> is an Android Architecture Component that holds and manages UI-related state. It survives configuration changes like screen rotation — when the screen rotates, composables are destroyed and recreated, but the <code>ViewModel</code> persists. This is why state that must survive rotation (search query, selected tab) lives in a <code>ViewModel</code>, not in a composable with <code>remember</code>.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="kw">class</span> <span class="typ">LibraryViewModel</span> : <span class="typ">ViewModel</span>() {
+    <span class="cmt">// selectedTab survives rotation — lives in ViewModel</span>
+    <span class="kw">private val</span> _selectedTab = <span class="fn">MutableStateFlow</span>(<span class="num">0</span>)
+}</div>
+          <span class="term-where">📍 Every ViewModel in the course</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="repository pattern single source truth data centralize">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Repository Pattern</div><div class="term-tagline">A single class that owns all data — ViewModels read from it, never manage their own</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">The Repository Pattern centralizes data management. Instead of each ViewModel having its own hardcoded list, all ViewModels read from and write to a single Repository. This ensures consistency — deleting a playlist in Library also removes it from Search because both read the same data source.</p>
+          <div class="term-section-label">Without vs with Repository</div>
+          <div class="code-snippet"><span class="cmt">// Without Repository — two independent lists</span>
+<span class="cmt">// Delete in Library → Search still shows deleted playlist ❌</span>
+<span class="kw">class</span> <span class="typ">LibraryViewModel</span> { <span class="kw">val</span> playlists = <span class="fn">MutableStateFlow</span>(<span class="fn">listOf</span>(...)) }
+<span class="kw">class</span> <span class="typ">SearchViewModel</span>  { <span class="kw">val</span> playlists = <span class="fn">MutableStateFlow</span>(<span class="fn">listOf</span>(...)) }
+
+<span class="cmt">// With Repository — one shared source</span>
+<span class="cmt">// Delete in Library → Search updates automatically ✅</span>
+<span class="kw">class</span> <span class="typ">LibraryViewModel</span> { <span class="kw">val</span> playlists = PlaylistRepository.playlists }
+<span class="kw">class</span> <span class="typ">SearchViewModel</span>  { <span class="kw">val</span> playlists = PlaylistRepository.playlists }</div>
+          <span class="term-where">📍 Ch1 PlaylistRepository</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="single source truth one list reactive consistent data">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Single source of truth</div><div class="term-tagline">One authoritative location for each piece of data in the app</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">A principle where each piece of data has exactly one owner. Every other part of the app reads from that owner — never keeps a copy. When the owner changes the data, all readers update automatically. In this course: <code>PlaylistRepository</code> is the single source of truth for the playlist list.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// PlaylistRepository owns the list — only it can modify</span>
+<span class="kw">object</span> <span class="typ">PlaylistRepository</span> {
+    <span class="kw">private val</span> _playlists = <span class="fn">MutableStateFlow</span>(<span class="fn">listOf</span>(...))
+    <span class="kw">val</span> playlists = _playlists.<span class="fn">asStateFlow</span>()  <span class="cmt">// read-only for others</span>
+    <span class="kw">fun</span> <span class="fn">deletePlaylist</span>(p: <span class="typ">Playlist</span>) { ... }   <span class="cmt">// only way to modify</span>
+}</div>
+          <span class="term-where">📍 Ch1 concept · used in Ch4, Ch7</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="UserSessionViewModel shared activity level scope viewmodel">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Activity-level ViewModel</div><div class="term-tagline">A ViewModel instantiated once and shared across all screens</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">When <code>viewModel()</code> is called inside a composable, it associates the ViewModel with the nearest <code>ViewModelStoreOwner</code>. If each screen called <code>viewModel()</code> for <code>UserSessionViewModel</code> independently, they would each get a different instance with different data. By instantiating it once in <code>MainActivity</code> and passing it down as a parameter, all screens share the same instance.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// MainActivity — instantiated once at Activity level</span>
+<span class="kw">val</span> sessionViewModel: <span class="typ">UserSessionViewModel</span> = <span class="fn">viewModel</span>()
+
+<span class="cmt">// Passed down through SoundInNavGraph → MainScreen → ProfileScreen</span>
+<span class="cmt">// All three see the same instance and the same session data</span></div>
+          <span class="term-where">📍 Ch3 MainActivity · UserSessionViewModel</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="in-memory repository production real backend room retrofit">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">In-memory Repository</div><div class="term-tagline">A repository that holds data in RAM — the professional pattern before a database exists</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">An in-memory repository stores data in RAM using a <code>MutableStateFlow</code> list. Data is lost when the app is closed. Professional Android developers use this pattern when the backend or database is not yet ready. When Room or Retrofit is added later, only the Repository changes — ViewModels and UI remain untouched.</p>
+          <div class="term-section-label">Architecture path</div>
+          <div class="code-snippet"><span class="cmt">// Current course (UI Advanced)</span>
+UI → ViewModel → Repository (in-memory MutableStateFlow)
+
+<span class="cmt">// Future courses (Persistence)</span>
+UI → ViewModel → Repository → Room (local database)
+
+<span class="cmt">// Even later</span>
+UI → ViewModel → Repository → Retrofit (remote API)</div>
+          <span class="term-where">📍 Ch1 PlaylistRepository</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 9. MATERIAL 3 COLORS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="cat-section" id="material">
+    <div class="cat-header">
+      <span class="cat-badge" style="background:#DC2626;">Material 3</span>
+      <span class="cat-title">Material 3 Color Roles</span>
+      <span class="cat-count">4 terms</span>
+    </div>
+    <div class="terms-grid">
+
+      <div class="term-card" data-terms="primary onPrimary color role surface background">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">primary · onPrimary</div><div class="term-tagline">The brand color and what sits on top of it</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>primary</code> is the main brand color — used for the <code>TopAppBar</code> background, the <code>TabRow</code>, the avatar circle, and active <code>NavigationBarItem</code> indicators. <code>onPrimary</code> is the color for content placed <em>on top of</em> a <code>primary</code> background — the TopAppBar title, the avatar initial letter. Never use <code>onPrimary</code> on a white background.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet">TopAppBarDefaults.<span class="fn">topAppBarColors</span>(
+    containerColor    = MaterialTheme.colorScheme.primary,    <span class="cmt">// purple bar</span>
+    titleContentColor = MaterialTheme.colorScheme.onPrimary   <span class="cmt">// white text</span>
+)</div>
+          <span class="term-where">📍 Ch3 ProfileScreen · Ch5 LibraryScreen · Ch2 BottomNav</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="onSurface onSurfaceVariant text secondary surface white">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">onSurface · onSurfaceVariant</div><div class="term-tagline">Primary and secondary text colors on white backgrounds</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>onSurface</code> is the main text color for white or surface-colored backgrounds — high emphasis, for the most important text. <code>onSurfaceVariant</code> is a secondary text color for the same backgrounds — lower emphasis, for supporting or less important information. Using both creates visual hierarchy without changing font size.</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// ProfileScreen — name is primary info, email is secondary</span>
+<span class="fn">Text</span>(text = userName, style = MaterialTheme.typography.titleLarge)
+<span class="cmt">// uses default onSurface — stands out</span>
+
+<span class="fn">Text</span>(text = userEmail, color = MaterialTheme.colorScheme.onSurfaceVariant)
+<span class="cmt">// explicitly onSurfaceVariant — less prominent</span>
+
+<span class="cmt">// Same pattern in PlaylistCard</span>
+<span class="fn">Text</span>(playlist.name)                                     <span class="cmt">// onSurface</span>
+<span class="fn">Text</span>(<span class="str">"15 songs"</span>, color = ...onSurfaceVariant)            <span class="cmt">// secondary</span></div>
+          <span class="term-where">📍 Ch3 ProfileScreen · Ch4 PlaylistCard · Ch7 SearchScreen</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="error color red delete danger destructive">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">error</div><div class="term-tagline">The color for destructive actions and error states</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc"><code>error</code> is the Material 3 semantic color for destructive actions, validation errors, and warning states. Using it consistently signals to the user that an action is irreversible or dangerous — delete buttons, the Log Out confirm button, and the filled heart icon for "Remove from favorites."</p>
+          <div class="term-section-label">Example</div>
+          <div class="code-snippet"><span class="cmt">// AlertDialog — Log Out confirm in red</span>
+<span class="fn">Text</span>(<span class="str">"Log Out"</span>, color = MaterialTheme.colorScheme.error)
+
+<span class="cmt">// BottomSheet — Delete option in red</span>
+<span class="fn">Text</span>(<span class="str">"Delete playlist"</span>, color = MaterialTheme.colorScheme.error)
+<span class="fn">Icon</span>(..., tint = MaterialTheme.colorScheme.error)</div>
+          <span class="term-where">📍 Ch3 ProfileScreen · Ch6 PlaylistBottomSheet</span>
+        </div>
+      </div>
+
+      <div class="term-card" data-terms="color role hierarchy visual emphasis material system">
+        <div class="term-card-header" onclick="toggleCard(this)">
+          <div><div class="term-name">Color roles — the system</div><div class="term-tagline">How Material 3 color roles create consistent visual hierarchy</div></div>
+          <span class="term-chevron">▶</span>
+        </div>
+        <div class="term-body">
+          <div class="term-section-label">Definition</div>
+          <p class="term-desc">Material 3 defines color roles — semantic names that describe how a color is used, not what color it is. This means the same design works across any theme (light, dark, or custom brand colors) without changing code. Each <code>on*</code> role is always used on top of its corresponding background role.</p>
+          <div class="term-section-label">The rule</div>
+          <div class="code-snippet"><span class="cmt">// Rule: always pair container + onContainer</span>
+primary     → onPrimary        <span class="cmt">// TopAppBar bg → TopAppBar text</span>
+surface     → onSurface        <span class="cmt">// white bg → main text</span>
+surface     → onSurfaceVariant <span class="cmt">// white bg → secondary text</span>
+
+<span class="cmt">// Violation example — never do this:</span>
+<span class="fn">Text</span>(color = MaterialTheme.colorScheme.onPrimary) <span class="cmt">// on white bg → invisible</span></div>
+          <span class="term-where">📍 Concept — Ch3 ProfileScreen explanation</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script>
+  function toggleCard(header) {
+    const card = header.parentElement;
+    card.classList.toggle('open');
+  }
+
+  // Search
+  const searchInput = document.getElementById('glossarySearch');
+  const noResults   = document.getElementById('no-results');
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    let visible = 0;
+
+    document.querySelectorAll('.term-card').forEach(card => {
+      const terms = (card.dataset.terms || '').toLowerCase();
+      const name  = card.querySelector('.term-name').textContent.toLowerCase();
+      const tag   = card.querySelector('.term-tagline').textContent.toLowerCase();
+      const body  = card.querySelector('.term-body').textContent.toLowerCase();
+      const match = !q || terms.includes(q) || name.includes(q) || tag.includes(q) || body.includes(q);
+      card.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+
+    document.querySelectorAll('.cat-section').forEach(section => {
+      const anyVisible = [...section.querySelectorAll('.term-card')].some(c => c.style.display !== 'none');
+      section.style.display = anyVisible ? '' : 'none';
+    });
+
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+  });
+
+  // Sidebar scroll spy
+  const onPageLinks = document.querySelectorAll('.sidebar a[href^="#"]');
+  const sections    = document.querySelectorAll('.cat-section');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 140) current = s.id; });
+    onPageLinks.forEach(a => {
+      const href = a.getAttribute('href').replace('#', '');
+      a.classList.toggle('active', href === current);
+    });
+  }, { passive: true });
+</script>
+</body>
+</html>
