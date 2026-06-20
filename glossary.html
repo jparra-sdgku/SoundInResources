@@ -104,6 +104,7 @@
   <a class="topnav-brand" href="#"><div class="logo">S</div>SoundIn</a>
   <span class="topnav-course">UI Advanced — Glossary</span>
   <a class="nav-btn" href="ch1.html">← Back to chapters</a>
+  <a class="nav-btn" href="flashcards.html">Flashcards →</a>
 </nav>
 
 <aside class="sidebar">
@@ -115,6 +116,7 @@
   <a class="sidebar-link" href="ch5.html"><span class="ch-badge">5</span>LibraryScreen</a>
   <a class="sidebar-link" href="ch6.html"><span class="ch-badge">6</span>PlaylistBottomSheet</a>
   <a class="sidebar-link" href="ch7.html"><span class="ch-badge">7</span>Search</a>
+  <div class="sidebar-section-label" style="margin-top:24px;">Resources</div>
   <div class="sidebar-section-label" style="margin-top:24px;">Categories</div>
   <a class="sidebar-link" href="#kotlin"><span class="cat-dot" style="background:#E8562A;"></span>Kotlin Fundamentals</a>
   <a class="sidebar-link" href="#lambdas"><span class="cat-dot" style="background:#DB2777;"></span>Functions &amp; Lambdas</a>
@@ -176,8 +178,8 @@
 
       <div class="term-card" data-terms="by delegate property kotlin">
         <div class="term-card-header" onclick="toggleCard(this)">
-<p class="term-desc"><code>by</code> is a Kotlin keyword that delegates a property to another object. In Compose, it is used with <code>collectAsStateWithLifecycle()</code> and <code>remember { mutableStateOf() }</code> so you can write <code>userName</code> directly instead of <code>userName.value</code> everywhere in the composable.</p>
-<p class="term-desc"><strong>Why not in ViewModels?</strong> Inside a ViewModel, <code>_query</code> is a raw <code>MutableStateFlow</code> — it does not implement the Kotlin delegation interface, so <code>by</code> delegation is not available there. The rule is simple: use <code>by</code> in composables, use <code>.value</code> in ViewModels.</p>          <span class="term-chevron">▶</span>
+          <div><div class="term-name">by</div><div class="term-tagline">Property delegate — removes the need to write .value</div></div>
+          <span class="term-chevron">▶</span>
         </div>
         <div class="term-body">
           <div class="term-section-label">Definition</div>
